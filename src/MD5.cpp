@@ -5,10 +5,10 @@
 #include <iomanip>
 #include <optional>
 
-#include "MD5.h"
+#include "../headers/MD5.h"
 
 
-std::vector<unsigned char> readBinaryFile(const std::string& path)
+[[maybe_unused]] std::vector<unsigned char> readBinaryFile(const std::string& path)
 {
     std::vector<unsigned char> output;
     std::ifstream file(path, std::ios::binary);
@@ -28,24 +28,28 @@ std::optional<std::string> md5FromFile(const std::string& filename)
     }
     char buf[K_READ_BUF_SIZE];
     std::ifstream file(filename, std::ifstream::binary);
-    while (file.good())
-    {
-        file.read(buf, sizeof(buf));
-        if(!MD5_Update(&context, buf, file.gcount()))
+    if(file.good()){
+        while(file.good())
+        {
+            file.read(buf, sizeof(buf));
+            if(!MD5_Update(&context, buf, file.gcount()))
+            {
+                return std::nullopt;
+            }
+        }
+        unsigned char result[MD5_DIGEST_LENGTH];
+        if(!MD5_Final(result, &context))
         {
             return std::nullopt;
         }
-    }
-    unsigned char result[MD5_DIGEST_LENGTH];
-    if(!MD5_Final(result, &context))
-    {
+        std::stringstream md5str;
+        md5str << std::hex << std::setfill('0');
+        for (const auto &byte: result)
+        {
+            md5str << std::setw(2) << (int)byte;
+        }
+        return md5str.str();
+    }else{
         return std::nullopt;
     }
-    std::stringstream shastr;
-    shastr << std::hex << std::setfill('0');
-    for (const auto &byte: result)
-    {
-        shastr << std::setw(2) << (int)byte;
-    }
-    return shastr.str();
 }
