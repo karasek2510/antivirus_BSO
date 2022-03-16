@@ -1,23 +1,10 @@
 #include <openssl/md5.h>
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <iomanip>
 #include <optional>
 
 #include "../headers/MD5.h"
-
-
-[[maybe_unused]] std::vector<unsigned char> readBinaryFile(const std::string& path)
-{
-    std::vector<unsigned char> output;
-    std::ifstream file(path, std::ios::binary);
-    if (!file)
-        std::cerr << "File not found!\n";
-    else
-        output.assign((std::istreambuf_iterator<char>(file)),std::istreambuf_iterator<char>());
-    return output;
-}
 
 std::optional<std::string> md5FromFile(const std::string& filename)
 {

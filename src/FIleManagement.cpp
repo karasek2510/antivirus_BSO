@@ -13,20 +13,25 @@
 
 std::vector<std::string> listFiles(const std::string& path){
     std::vector<std::string> files;
-    for (const auto& file : std::filesystem::recursive_directory_iterator(path)){
-        if(!std::filesystem::is_directory(file.path()))
-            files.push_back(file.path());
+    if(!std::filesystem::is_directory(path)){
+        files.push_back(path);
+    }else{
+        for (const auto& file : std::filesystem::recursive_directory_iterator(path)){
+            if(!std::filesystem::is_directory(file.path()))
+                files.push_back(file.path());
+        }
+
     }
     return files;
 }
 
-void appendToFile(const std::string& file, std::string string){
+void appendToFile(const std::string& file, const std::string& string){
     std::ofstream fileOut;
     fileOut.open(file, std::ios_base::app);
     fileOut << string << "\n";
 }
 
-void getFileContent(std::unordered_set<std::string>& uSet, std::string file){
+void getFileContent(std::unordered_set<std::string>& uSet, const std::string& file){
     std::ifstream fileIn(file);
     if (!fileIn) {
         std::cerr << file << " doesnt exist!";
@@ -35,7 +40,7 @@ void getFileContent(std::unordered_set<std::string>& uSet, std::string file){
     std::string line;
     while (std::getline(fileIn, line))
     {
-        if(line.size()>0){
+        if(!line.empty()){
             uSet.insert(line);
         }
     }
