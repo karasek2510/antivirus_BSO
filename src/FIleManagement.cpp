@@ -48,10 +48,7 @@ void getFileContent(std::unordered_set<std::string>& uSet, const std::string& fi
 }
 
 bool isStrInUnorderedSet(std::unordered_set<std::string>& uSet, const std::string& str){
-    if (uSet.find(str) != uSet.end())
-        return true;
-    else
-        return false;
+    return uSet.find(str) != uSet.end();
 }
 
 void removeExec(const std::string& file){
