@@ -5,10 +5,6 @@
 #include <tclap/CmdLine.h>
 #include <filesystem>
 
-using namespace TCLAP;
-using namespace std;
-
-
 int main(int argc, char **argv) {
     try{
         TCLAP::CmdLine cmd("Antivirus project BSO",' ', "1.0");
@@ -27,15 +23,15 @@ int main(int argc, char **argv) {
         std::cout << "Files: "<< files.size() << "\n";
         for(const std::string& file : files) {
             md5Hash = md5FromFile(file).value_or("Cant evaluate hash!");
-//            std::cout << file << " : " << md5Hash << "\n";
+            std::cout << file << " : " << md5Hash << "\n";
             if(isStrInUnorderedSet(hashesSet,md5Hash)) {
                 std::cout << "Match: " << file << "\n";
                 removeExec(file);
-                string homedir = getenv("HOME");
-                std::filesystem::create_directory(homedir+"/.danger");
-                std::string baseFilename = file.substr(file.find_last_of("/\\") + 1);
+                std::string quarantineDir = getenv("HOME");
+                quarantineDir += "/.danger";
+                std::filesystem::create_directory(quarantineDir);
                 try {
-                    std::filesystem::copy(file, homedir.append("/.danger/").append(baseFilename));
+                    copyFile(file,quarantineDir);
 //                    std::filesystem::remove(file);
                 } catch (std::filesystem::filesystem_error& e) {
                     std::cerr << e.what() << '\n';

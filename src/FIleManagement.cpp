@@ -17,10 +17,10 @@ std::vector<std::string> listFiles(const std::string& path){
         files.push_back(path);
     }else{
         for (const auto& file : std::filesystem::recursive_directory_iterator(path)){
-            if(!std::filesystem::is_directory(file.path()))
+            if(std::filesystem::is_regular_file(file.path()) || std::filesystem::is_symlink(file.path()))
+                std::cout << file.path() << "\n";
                 files.push_back(file.path());
         }
-
     }
     return files;
 }
@@ -57,5 +57,17 @@ void removeExec(const std::string& file){
                                        std::filesystem::perms::group_exec |
                                        std::filesystem::perms::others_exec,
                                  std::filesystem::perm_options::remove);
+}
 
+void copyFile(const std::string& file, std::string directory){
+    std::string baseFilename = file.substr(file.find_last_of("/\\") + 1);
+    std::string tempFileInDirectory = directory.append("/").append(baseFilename);
+    int counter = 0;
+    std::string fileInDirectory;
+    do {
+        fileInDirectory = tempFileInDirectory;
+        fileInDirectory.append("_").append(std::to_string(counter));
+        counter++;
+    }while(std::filesystem::exists(fileInDirectory));
+    std::filesystem::copy(file,fileInDirectory);
 }

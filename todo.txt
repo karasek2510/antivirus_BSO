@@ -1,5 +1,5 @@
 - nie moze skanowac danger
 - pliki specjalne
-- ogarnac konflikt nazw w danger
 - jakis pasek postepu
 - lepsze komunikaty bledow
+- podazanie na linkiem przy kwarantannie
