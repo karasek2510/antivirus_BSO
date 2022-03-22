@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 20)
 
 link_libraries(crypto)
 
-add_executable(antivirus src/main.cpp src/FIleManagement.cpp src/MD5.cpp headers/MD5.h headers/FileManagement.h)
+add_executable(antivirus src/main.cpp src/FIleManagement.cpp src/MD5.cpp headers/MD5.h headers/FileManagement.h src/Scanner.cpp headers/Scanner.h)

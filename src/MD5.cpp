@@ -9,15 +9,13 @@
 std::optional<std::string> md5FromFile(const std::string& filename)
 {
     MD5_CTX context;
-    if(!MD5_Init(&context))
-    {
+    if(!MD5_Init(&context)){
         return std::nullopt;
     }
     char buf[K_READ_BUF_SIZE];
     std::ifstream file(filename, std::ifstream::binary);
     if(file.good()){
-        while(file.good())
-        {
+        while(file.good()){
             file.read(buf, sizeof(buf));
             if(!MD5_Update(&context, buf, file.gcount()))
             {

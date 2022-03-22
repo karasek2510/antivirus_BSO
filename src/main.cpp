@@ -22,21 +22,7 @@ int main(int argc, char **argv) {
         std::string md5Hash;
         std::cout << "Files: "<< files.size() << "\n";
         for(const std::string& file : files) {
-            md5Hash = md5FromFile(file).value_or("Cant evaluate hash!");
-            std::cout << file << " : " << md5Hash << "\n";
-            if(isStrInUnorderedSet(hashesSet,md5Hash)) {
-                std::cout << "Match: " << file << "\n";
-                removeExec(file);
-                std::string quarantineDir = getenv("HOME");
-                quarantineDir += "/.danger";
-                std::filesystem::create_directory(quarantineDir);
-                try {
-                    copyFile(file,quarantineDir);
-//                    std::filesystem::remove(file);
-                } catch (std::filesystem::filesystem_error& e) {
-                    std::cerr << e.what() << '\n';
-                }
-            }
+
         }
 
     }catch (TCLAP::ArgException& argException){

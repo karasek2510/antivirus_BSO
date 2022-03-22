@@ -13,12 +13,11 @@
 
 std::vector<std::string> listFiles(const std::string& path){
     std::vector<std::string> files;
-    if(!std::filesystem::is_directory(path)){
+    if(std::filesystem::is_regular_file(path) || std::filesystem::is_symlink(path)){
         files.push_back(path);
     }else{
         for (const auto& file : std::filesystem::recursive_directory_iterator(path)){
             if(std::filesystem::is_regular_file(file.path()) || std::filesystem::is_symlink(file.path()))
-                std::cout << file.path() << "\n";
                 files.push_back(file.path());
         }
     }
