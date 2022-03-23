@@ -3,30 +3,52 @@
 //
 
 #include <string>
-#include <unordered_set>
 #include <filesystem>
 #include <iostream>
 #include "../headers/MD5.h"
 #include "../headers/FileManagement.h"
 
-void scan(std::string& path, std::unordered_set<std::string>& hashesSet){
-    if(std::filesystem::is_regular_file(path)){
-        std::string md5Hash = md5FromFile(path).value_or("Cant evaluate hash!");
-        if(isStrInUnorderedSet(hashesSet,md5Hash)) {
-            removeExec(path);
-            std::string quarantineDir = getenv("HOME");
-            quarantineDir += "/.danger";
-            std::filesystem::create_directory(quarantineDir);
-            try {
-                copyFile(path,quarantineDir);
-//                    std::filesystem::remove(file);
-            } catch (std::filesystem::filesystem_error& e) {
-                std::cerr << e.what() << '\n';
+
+std::unordered_set<std::string> hashesSet;
+
+bool scanFile(std::filesystem::path path) {
+    if (std::filesystem::is_symlink(path)) {
+        std::string tempPath = path;
+        std::cout << "Symlink: " << tempPath << "\n";
+        tempPath = std::filesystem::canonical(
+                path.parent_path().append(std::filesystem::read_symlink(tempPath).string()));
+        if (std::filesystem::is_regular_file(tempPath)) {
+            std::optional<std::string> md5 = md5FromFile(tempPath);
+            if (md5 && isStrInUnorderedSet(hashesSet, md5.value())) {
+                std::cout << tempPath << " matched!\n";
+                return true;
+            } else {
+                return false;
             }
+        } else {
+            return false;
         }
-    }else if(std::filesystem::is_symlink(path)){
 
-    }else{
+    } else if (std::filesystem::is_regular_file(path)) {
+        std::cout << path << "\n";
+        std::optional<std::string> md5 = md5FromFile(path);
+        if (md5 && isStrInUnorderedSet(hashesSet, md5.value())) {
+            std::cout << path << " matched!\n";
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
 
+void scanFiles(std::string &path) {
+    if (!std::filesystem::is_directory(path)) {
+        scanFile(path);
+    } else {
+        for (const auto &file: std::filesystem::recursive_directory_iterator(path)) {
+            scanFile(file);
+        }
     }
 }

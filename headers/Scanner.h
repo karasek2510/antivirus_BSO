@@ -8,6 +8,8 @@
 #include <string>
 #include <unordered_set>
 
-void scan(std::string& path, std::unordered_set<std::string>& hashesSet);
+bool scanFile(std::filesystem::path path);
+
+void scanFiles(std::string &path);
 
 #endif //ANTIVIRUS_SCANNER_H

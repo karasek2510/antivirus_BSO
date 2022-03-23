@@ -8,8 +8,8 @@
 #include <vector>
 #include <optional>
 
-static const int K_READ_BUF_SIZE{ 1024 * 16 };
+static const int K_READ_BUF_SIZE{1024 * 16};
 
-std::optional<std::string> md5FromFile(const std::string& file);
+std::optional<std::string> md5FromFile(const std::string &file);
 
 #endif //ANT_MD5_H
