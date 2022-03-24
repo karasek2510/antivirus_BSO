@@ -17,15 +17,16 @@ int main(int argc, char **argv) {
 //        TCLAP::ValueArg<std::string> hashesArg("H","hashes","File containing hashes",true,"null","string");
 //        cmd.add(hashesArg);
 //        cmd.parse(argc,argv);
-        std::string target = "/usr";
+        std::string target = "/etc";
         std::string hashes = "/home/karasek/code/antivirus_BSO/resources/bigHashes.txt";
         getFileContent(hashesSet, hashes);
         scanFiles(target);
+        std::cout << "END!!! \n";
 
 
     } catch (TCLAP::ArgException &argException) {
         std::cerr << "error: " << argException.error() << " for arg " << argException.argId() << std::endl;
     } catch (std::filesystem::__cxx11::filesystem_error &filesystemError) {
-        std::cerr << "An invalid file name was specified" << "\n";
+        std::cerr << filesystemError.what() << "\n";
     }
 }

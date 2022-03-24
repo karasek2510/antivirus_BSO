@@ -7,47 +7,45 @@
 #include <iostream>
 #include "../headers/MD5.h"
 #include "../headers/FileManagement.h"
+#include "../headers/Quarantine.h"
 
 
 std::unordered_set<std::string> hashesSet;
 
 bool scanFile(std::filesystem::path path) {
-    if (std::filesystem::is_symlink(path)) {
-        std::string tempPath = path;
-        std::cout << "Symlink: " << tempPath << "\n";
-        tempPath = std::filesystem::canonical(
-                path.parent_path().append(std::filesystem::read_symlink(tempPath).string()));
-        if (std::filesystem::is_regular_file(tempPath)) {
-            std::optional<std::string> md5 = md5FromFile(tempPath);
-            if (md5 && isStrInUnorderedSet(hashesSet, md5.value())) {
-                std::cout << tempPath << " matched!\n";
-                return true;
-            } else {
-                return false;
-            }
-        } else {
+    std::filesystem::path regularFilePath;
+    if(std::filesystem::is_symlink(path)) {
+        std::cout << "Symlink: " << path << "\n";                            // LOGGER
+        try {
+            regularFilePath = std::filesystem::canonical(
+                    path.parent_path().append(std::filesystem::read_symlink(path).string()));
+        } catch(const std::exception& ex){
+            std::cout << ex.what() << "\n";
             return false;
         }
-
-    } else if (std::filesystem::is_regular_file(path)) {
-        std::cout << path << "\n";
-        std::optional<std::string> md5 = md5FromFile(path);
-        if (md5 && isStrInUnorderedSet(hashesSet, md5.value())) {
-            std::cout << path << " matched!\n";
-            return true;
-        } else {
+        if (!std::filesystem::is_regular_file(regularFilePath)) {
             return false;
         }
-    } else {
-        return false;
+    } else if (std::filesystem::is_regular_file(path)){
+        regularFilePath = path;
     }
+    if(!regularFilePath.empty()){
+        std::cout << regularFilePath << "\n";                                           // LOGGER
+        std::optional<std::string> md5 = md5FromFile(regularFilePath);
+        if (md5 && isStrInUnorderedSet(hashesSet, md5.value())) {
+            std::cout << regularFilePath << " matched!\n";                                         // LOGGER
+            doQuarantine(regularFilePath);
+            return true;
+        }
+    }
+    return false;
 }
 
 void scanFiles(std::string &path) {
     if (!std::filesystem::is_directory(path)) {
         scanFile(path);
     } else {
-        for (const auto &file: std::filesystem::recursive_directory_iterator(path)) {
+        for (const auto &file: std::filesystem::recursive_directory_iterator(path,std::filesystem::directory_options::skip_permission_denied)) {
             scanFile(file);
         }
     }
