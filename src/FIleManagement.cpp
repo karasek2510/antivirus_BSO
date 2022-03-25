@@ -45,15 +45,17 @@ void removeExec(const std::string &file) {
                                  std::filesystem::perm_options::remove);
 }
 
-void copyFile(const std::string &file, std::string directory) {
-    std::string baseFilename = file.substr(file.find_last_of("/\\") + 1);
-    std::string tempFileInDirectory = directory.append("/").append(baseFilename);
+std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path& directory) {
+    std::string baseFilename = file.stem();
+    std::string fileExtension = file.extension();
     int counter = 0;
     std::string fileInDirectory;
+    std::string tempFileInDirectory;
+    tempFileInDirectory.append(directory).append("/").append(baseFilename).append("_");
     do {
         fileInDirectory = tempFileInDirectory;
-        fileInDirectory.append("_").append(std::to_string(counter));
+        fileInDirectory.append(std::to_string(counter)).append(fileExtension);
         counter++;
     } while (std::filesystem::exists(fileInDirectory));
-    std::filesystem::copy(file, fileInDirectory);
+    return fileInDirectory;
 }

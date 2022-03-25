@@ -15,6 +15,6 @@ bool isStrInUnorderedSet(std::unordered_set<std::string> &uSet, const std::strin
 
 void removeExec(const std::string &file);
 
-void copyFile(const std::string &file, std::string directory);
+std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path& directory);
 
 #endif //ANTIVIRUS_BSO_FILEMANAGEMENT_H
