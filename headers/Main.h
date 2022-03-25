@@ -8,7 +8,10 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <filesystem>
 
 extern std::unordered_set<std::string> hashesSet;
+extern std::filesystem::path quarantineDirectory;
+
 
 #endif //ANTIVIRUS_MAIN_H

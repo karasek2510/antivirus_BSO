@@ -5,7 +5,7 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
-#include "../headers/MD5.h"
+#include "../headers/CryptoFuntions.h"
 #include "../headers/FileManagement.h"
 #include "../headers/Quarantine.h"
 
@@ -13,6 +13,11 @@
 std::unordered_set<std::string> hashesSet;
 
 bool scanFile(std::filesystem::path path) {
+    if(path=="/proc/kcore" ||
+            path=="/proc/net"
+            ){
+        return false;
+    }
     std::filesystem::path regularFilePath;
     if(std::filesystem::is_symlink(path)) {
         std::cout << "Symlink: " << path << "\n";                            // LOGGER
@@ -29,7 +34,7 @@ bool scanFile(std::filesystem::path path) {
     } else if (std::filesystem::is_regular_file(path)){
         regularFilePath = path;
     }
-    if(!regularFilePath.empty()){
+    if(!(regularFilePath.empty() || std::filesystem::is_empty(regularFilePath))){
         std::cout << regularFilePath << "\n";                                           // LOGGER
         std::optional<std::string> md5 = md5FromFile(regularFilePath);
         if (md5 && isStrInUnorderedSet(hashesSet, md5.value())) {
