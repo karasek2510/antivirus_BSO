@@ -71,7 +71,7 @@ void decryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &k
     std::ifstream in{filename_in, std::ios::binary};
     std::ofstream out{filename_out, std::ios::binary};
 
-    CryptoPP::FileSource{in, /*pumpAll=*/true,
+    CryptoPP::FileSource{in, true,
                          new CryptoPP::StreamTransformationFilter{
                                  cipher, new CryptoPP::FileSink{out}}};
 }

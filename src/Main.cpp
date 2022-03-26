@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <cryptopp/osrng.h>
 #include "../headers/Scanner.h"
+#include "../headers/Quarantine.h"
 
 
 #include "cryptopp/modes.h"
@@ -26,38 +27,16 @@ int main(int argc, char **argv) {
 //        TCLAP::ValueArg<std::string> hashesArg("H","hashes","File containing hashes",true,"null","string");
 //        cmd.add(hashesArg);
 //        cmd.parse(argc,argv);
-        std::string target = "/home/karasek/CLionProjects/antivirus_BSO/resources/hashes.txt";
-        std::string hashes = "/home/karasek/CLionProjects/antivirus_BSO/resources/bigHashes.txt";
+//        std::string target = "/home/karasek/code/antivirus_BSO/resources/hashes2.txt";
+//        std::string hashes = "/home/karasek/code/antivirus_BSO/resources/bigHashes.txt";
         quarantineDirectory = "/home/karasek/Q";
-        if(!std::filesystem::exists(quarantineDirectory)){
-            std::filesystem::create_directory(quarantineDirectory);
-        }
-        getFileContent(hashesSet, hashes);
-        scanFiles(target);
-        std::cout << "END!!! \n";
-
-
-
-//        CryptoPP::AutoSeededRandomPool rng{};
-//
-//        // Generate a random key
-//        std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> key{};
-//        rng.GenerateBlock(reinterpret_cast<byte *>(key.data()), key.size());
-//
-//        // Generate a random IV
-//        std::array<std::byte , CryptoPP::AES::BLOCKSIZE> iv{};
-//        rng.GenerateBlock(reinterpret_cast<byte *>(iv.data()), iv.size());
-//        auto start = std::chrono::steady_clock::now();
-//        // encrypt
-//        encryptAES(key, iv, "/home/karasek/CLionProjects/antivirus_BSO/resources/hashes.txt", "/home/karasek/CLionProjects/antivirus_BSO/xd");
-//        std::cout << "Elapsed time in mili: "
-//             << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count()
-//             << " ns" << "\n";
-//        // decrypt
-//        decryptAES(key, iv, "/home/karasek/CLionProjects/antivirus_BSO/xd", "/home/karasek/CLionProjects/antivirus_BSO/xd2");
-//        std::cout << "Elapsed time in mili: "
-//                  << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count()
-//                  << " ns" << "\n";
+//        if(!std::filesystem::exists(quarantineDirectory)){
+//            std::filesystem::create_directory(quarantineDirectory);
+//        }
+//        getFileContent(hashesSet, hashes);
+//        scanFiles(target);
+//        std::cout << "END!!! \n";
+        restoreFromQuarantine("hashes_7.txt");
         return 0;
 
 
