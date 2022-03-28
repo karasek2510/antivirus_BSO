@@ -10,6 +10,6 @@
 
 bool scanFile(std::filesystem::path path);
 
-void scanFiles(std::string &path);
+void scanFiles(std::filesystem::path &path);
 
 #endif //ANTIVIRUS_SCANNER_H

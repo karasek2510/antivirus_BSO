@@ -13,7 +13,6 @@
 #include "cryptopp/aes.h"
 #include "cryptopp/filters.h"
 
-
 static const int K_READ_BUF_SIZE{1024 * 16};
 
 std::optional<std::string> md5FromFile(const std::string &file);

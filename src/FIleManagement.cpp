@@ -2,7 +2,6 @@
 // Created by karasek on 3/11/22.
 //
 
-#include <vector>
 #include <string>
 #include <filesystem>
 #include <fstream>
@@ -45,7 +44,7 @@ void removeExec(const std::string &file) {
                                  std::filesystem::perm_options::remove);
 }
 
-std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path& directory) {
+std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory) {
     std::string baseFilename = file.stem();
     std::string fileExtension = file.extension();
     int counter = 0;

@@ -5,12 +5,17 @@
 #ifndef ANTIVIRUS_QUARANTINE_H
 #define ANTIVIRUS_QUARANTINE_H
 
-std::string vectorToHexString(std::vector<std::byte> vector);
 
-void doQuarantine(std::filesystem::path path);
+#include <vector>
+#include <string>
 
-void generateInfoFile(std::string filename, std::filesystem::path originalLocation,std::vector<std::byte> key, std::vector<std::byte> iv);
+std::string vectorToHexString(const std::vector<std::byte>& vector);
 
-void restoreFromQuarantine(std::filesystem::path filename);
+bool doQuarantine(const std::filesystem::path& path);
+
+bool generateInfoFile(const std::filesystem::path& infoFilePath, const std::string& filename, const std::filesystem::path& originalLocation,
+                      const std::vector<std::byte>& key, const std::vector<std::byte>& iv);
+
+bool restoreFromQuarantine(const std::filesystem::path& filename);
 
 #endif //ANTIVIRUS_QUARANTINE_H

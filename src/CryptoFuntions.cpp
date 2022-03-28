@@ -1,4 +1,3 @@
-#include <openssl/md5.h>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -8,11 +7,10 @@
 #include "cryptopp/aes.h"
 #include "cryptopp/filters.h"
 #include <cryptopp/files.h>
-#include <iostream>
-#include <iomanip>
+
+#include <openssl/md5.h>
 
 #include "../headers/CryptoFuntions.h"
-
 
 
 std::optional<std::string> md5FromFile(const std::string &filename) {
@@ -46,7 +44,7 @@ std::optional<std::string> md5FromFile(const std::string &filename) {
 
 void encryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
-             const std::string &filename_in, const std::string &filename_out) {
+                const std::string &filename_in, const std::string &filename_out) {
 
     CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cipher{};
     cipher.SetKeyWithIV(reinterpret_cast<const byte *>(key.data()), key.size(),
@@ -62,7 +60,7 @@ void encryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &k
 
 void decryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
-             const std::string &filename_in, const std::string &filename_out){
+                const std::string &filename_in, const std::string &filename_out) {
 
     CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cipher{};
     cipher.SetKeyWithIV(reinterpret_cast<const byte *>(key.data()), key.size(),
