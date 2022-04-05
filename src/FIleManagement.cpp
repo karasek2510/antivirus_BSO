@@ -11,13 +11,23 @@
 #include "../headers/FileManagement.h"
 
 
+
+std::array<std::uint64_t,2> stringHashToUint64s(std::string strHash){
+    char delimiter = ',';
+    int index = strHash.find(delimiter);
+    std::uint64_t value1 = std::stol(strHash.substr(0,index));
+    std::uint64_t value2 = std::stol(strHash.substr(index+1));
+    return std::array<std::uint64_t,2>{value1,value2};
+}
+
+
 void appendToFile(const std::string &file, const std::string &string) {
     std::ofstream fileOut;
     fileOut.open(file, std::ios_base::app);
     fileOut << string << "\n";
 }
 
-bool getFileContent(std::unordered_set<std::string> &uSet, const std::string &file) {
+bool getFileContent(std::unordered_set<std::array<std::uint64_t,2>,HashArrayUint64_t>& uSet, const std::string &file) {
     std::ifstream fileIn(file);
     if (!fileIn) {
         return false;
@@ -25,15 +35,15 @@ bool getFileContent(std::unordered_set<std::string> &uSet, const std::string &fi
     std::string line;
     while (std::getline(fileIn, line)) {
         if (!line.empty()) {
-            uSet.insert(line);
+            uSet.insert(stringHashToUint64s(line));
         }
     }
     fileIn.close();
     return true;
 }
 
-bool isStrInUnorderedSet(std::unordered_set<std::string> &uSet, const std::string &str) {
-    return uSet.find(str) != uSet.end();
+bool isHexInUnorderedSet(std::unordered_set<std::array<std::uint64_t,2>, HashArrayUint64_t>  &uSet, std::array<std::uint64_t,2> hash) {
+    return uSet.find(hash) != uSet.end();
 }
 
 void removeExec(const std::string &file) {

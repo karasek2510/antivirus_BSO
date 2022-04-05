@@ -14,7 +14,7 @@ std::string vectorToHexString(const std::vector<std::byte>& vector);
 bool doQuarantine(const std::filesystem::path& path);
 
 bool generateInfoFile(const std::filesystem::path& infoFilePath, const std::string& filename, const std::filesystem::path& originalLocation,
-                      const std::vector<std::byte>& key, const std::vector<std::byte>& iv);
+                      std::filesystem::perms perms, const std::vector<std::byte>& key, const std::vector<std::byte>& iv);
 
 bool restoreFromQuarantine(const std::filesystem::path& filename);
 

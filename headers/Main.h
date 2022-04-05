@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <filesystem>
 
-extern std::unordered_set<std::string> hashesSet;
+extern std::unordered_set<std::array<std::uint64_t,2>, HashArrayUint64_t> hashesSet;
 extern std::filesystem::path quarantineDirectory;
 
 

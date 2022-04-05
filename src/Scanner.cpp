@@ -8,9 +8,8 @@
 #include "../headers/CryptoFuntions.h"
 #include "../headers/FileManagement.h"
 #include "../headers/Quarantine.h"
+#include "../headers/Main.h"
 
-
-std::unordered_set<std::string> hashesSet;
 
 bool scanFile(const std::filesystem::path& path) {
     std::filesystem::path regularFilePath;
@@ -39,12 +38,12 @@ bool scanFile(const std::filesystem::path& path) {
         return false;
     }
 
-    std::optional<std::string> md5 = md5FromFile(regularFilePath);
+    std::optional<std::array<std::uint64_t,2>> md5 = md5FromFile(regularFilePath);
     if (!md5) {
         std::cout << "Cannot evaluate hash" << "\n";
         return false;
     }
-    if (!isStrInUnorderedSet(hashesSet, md5.value())) {
+    if (!isHexInUnorderedSet(hashesSet,md5.value())) {
         std::cout << "OK" << "\n";
         return false;
     }

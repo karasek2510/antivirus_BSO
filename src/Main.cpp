@@ -13,6 +13,8 @@ std::filesystem::path quarantineDirectory;
 
 int main(int argc, char **argv) {
 
+
+
     CLI::App app{"Antivirus project by Szymon Kasperek"};
 
     auto restore = app.add_subcommand("restore", "Restore from quarantine");
@@ -52,6 +54,7 @@ int main(int argc, char **argv) {
             std::cerr << "Unable to open file containing hashes" << "\n";
             return EXIT_FAILURE;
         }
+
         std::cout << "Starting scanning:" << "\n";
         scanFiles(target);
         std::cout << "END!!! \n";
