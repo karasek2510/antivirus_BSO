@@ -1,20 +1,21 @@
-#include <iostream>
-#include <fstream>
+
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+
 #include <iomanip>
+#include <iostream>
 #include <optional>
 
-#include <cryptopp/modes.h>
 #include <cryptopp/aes.h>
+#include <cryptopp/cryptlib.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/files.h>
-
 #include <cryptopp/md5.h>
-#include <cryptopp/cryptlib.h>
+#include <cryptopp/modes.h>
 
 #include "../headers/CryptoFuntions.h"
 
-std::array<std::uint64_t,2>  byteArray16ToUint64s(std::array<byte, CryptoPP::MD5::DIGESTSIZE> array){
-    std::array<std::uint64_t,2>  result;
+std::array<std::uint64_t, 2> byteArray16ToUint64s(std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> array) {
+    std::array<std::uint64_t, 2> result{};
     uint64_t value1 =
             static_cast<uint64_t>(array[7]) |
             static_cast<uint64_t>(array[6]) << 8 |
@@ -39,19 +40,20 @@ std::array<std::uint64_t,2>  byteArray16ToUint64s(std::array<byte, CryptoPP::MD5
 }
 
 
-std::optional<std::array<std::uint64_t,2>> md5FromFile(const std::string& path) {
-    CryptoPP::MD5 md5;
-    std::array<byte, CryptoPP::MD5::DIGESTSIZE> hashArray;
-    try{
-        CryptoPP::FileSource fs( path.c_str(), true,
-                                 new CryptoPP::HashFilter( md5,
-                                                           new CryptoPP::ArraySink(hashArray.data(), CryptoPP::MD5::DIGESTSIZE)
-                                 ));
+std::optional<std::array<std::uint64_t, 2>> md5FromFile(const std::string &path) {
+    CryptoPP::Weak1::MD5 md5;
+    std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> hashArray{};
+    try {
+        CryptoPP::FileSource fs(path.c_str(), true,
+                                new CryptoPP::HashFilter(md5,
+                                                         new CryptoPP::ArraySink(hashArray.data(),
+                                                                                 CryptoPP::Weak1::MD5::DIGESTSIZE)
+                                ));
     }
-    catch (CryptoPP::FileStore::Err err){
+    catch (CryptoPP::FileStore::Err &err) {
         return std::nullopt;
     }
-    std::array<std::uint64_t,2>  hash = byteArray16ToUint64s(hashArray);
+    std::array<std::uint64_t, 2> hash = byteArray16ToUint64s(hashArray);
     return hash;
 }
 

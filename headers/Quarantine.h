@@ -1,21 +1,26 @@
-//
-// Created by karasek on 3/24/22.
-//
 
 #ifndef ANTIVIRUS_QUARANTINE_H
 #define ANTIVIRUS_QUARANTINE_H
 
-
-#include <vector>
 #include <string>
+#include <vector>
 
-std::string vectorToHexString(const std::vector<std::byte>& vector);
 
-bool doQuarantine(const std::filesystem::path& path);
 
-bool generateInfoFile(const std::filesystem::path& infoFilePath, const std::string& filename, const std::filesystem::path& originalLocation,
-                      std::filesystem::perms perms, const std::vector<std::byte>& key, const std::vector<std::byte>& iv);
+template<std::size_t SIZE>
+std::string arrayToHexString(const std::array<std::byte, SIZE> &array);
 
-bool restoreFromQuarantine(const std::filesystem::path& filename);
+template<std::size_t SIZE>
+std::array<std::byte, SIZE> hexStringToArray(const std::string &hex);
+
+bool doQuarantine(const std::filesystem::path &path);
+
+template<std::size_t SIZE_KEY,std::size_t SIZE_IV>
+bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::string &filename,
+                      const std::filesystem::path &originalLocation,
+                      std::filesystem::perms perms, const std::array<std::byte, SIZE_KEY>  &key,
+                      const std::array<std::byte, SIZE_IV>  &iv);
+
+bool restoreFromQuarantine(const std::filesystem::path &filename);
 
 #endif //ANTIVIRUS_QUARANTINE_H

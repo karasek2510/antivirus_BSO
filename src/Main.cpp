@@ -1,19 +1,17 @@
+
+#include <filesystem>
 #include <iostream>
 #include <unordered_set>
+
+#include "../libs/CLI11.hpp"
+#include "../headers/CryptoFuntions.h"
 #include "../headers/FileManagement.h"
-#include "../headers/Main.h"
-#include <filesystem>
 #include "../headers/Scanner.h"
 #include "../headers/Quarantine.h"
-
-#include "../headers/CLI11.hpp"
-
 
 std::filesystem::path quarantineDirectory;
 
 int main(int argc, char **argv) {
-
-
 
     CLI::App app{"Antivirus project by Szymon Kasperek"};
 
@@ -33,12 +31,29 @@ int main(int argc, char **argv) {
             ->check(CLI::ExistingFile)
             ->required();
 
+    auto hash = app.add_subcommand("hash", "Calculate hash of the file");
+    std::filesystem::path fileToHash;
+    hash->add_option("file", fileToHash, "File to be hashed")
+            ->check(CLI::ExistingFile)
+            ->required();
+
     CLI11_PARSE(app, argc, argv)
-    if (!(*restore || *scan)) {
+    if (!(*restore || *scan || *hash)) {
         std::cout << "Parameters are required" << "\n";
         std::cout << "Run with --help for more information." << "\n";
         return EXIT_FAILURE;
     }
+    if (*hash) {
+        std::cout << "Computing hash of " << fileToHash.string() << "\n";
+        std::optional<std::array<std::uint64_t, 2>> hashFromFile = md5FromFile(fileToHash);
+        if (!hashFromFile) {
+            std::cerr << "Hash could not be computed" << "\n";
+            return EXIT_FAILURE;
+        }
+        std::cout << "Result: " << hashFromFile.value()[0] << "," << hashFromFile.value()[1] << "\n";
+        return EXIT_SUCCESS;
+    }
+
     std::string homedir = getenv("HOME");
     quarantineDirectory = homedir + "/Q";
     std::cout << "Quarantine directory: " << quarantineDirectory.string() << "\n";
@@ -57,7 +72,7 @@ int main(int argc, char **argv) {
 
         std::cout << "Starting scanning:" << "\n";
         scanFiles(target);
-        std::cout << "END!!! \n";
+        std::cout << "Scan has been finished! \n";
         return EXIT_SUCCESS;
     }
     if (*restore) {
@@ -68,6 +83,4 @@ int main(int argc, char **argv) {
         std::cout << "File from quarantine was restored" << "\n";
         return EXIT_SUCCESS;
     }
-
-
 }
