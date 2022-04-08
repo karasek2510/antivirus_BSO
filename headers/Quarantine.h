@@ -6,6 +6,7 @@
 #include <vector>
 
 
+std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory);
 
 template<std::size_t SIZE>
 std::string arrayToHexString(const std::array<std::byte, SIZE> &array);

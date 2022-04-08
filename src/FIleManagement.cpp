@@ -1,3 +1,4 @@
+#include "../headers/FileManagement.h"
 
 #include <sys/vfs.h>
 
@@ -5,8 +6,6 @@
 #include <fstream>
 #include <string>
 #include <unordered_set>
-
-#include "../headers/FileManagement.h"
 
 std::array<std::uint64_t, 2> stringHashToUint64s(const std::string &strHash) {
     char delimiter = ',';
@@ -16,8 +15,7 @@ std::array<std::uint64_t, 2> stringHashToUint64s(const std::string &strHash) {
     return std::array<std::uint64_t, 2>{value1, value2};
 }
 
-bool
-getFileContent(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file) {
+bool getFileContent(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file) {
     std::ifstream fileIn(file);
     if (!fileIn) {
         return false;
@@ -32,25 +30,11 @@ getFileContent(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_
     return true;
 }
 
-bool isHexInUnorderedSet(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet,
-                         std::array<std::uint64_t, 2> hash) {
+bool isHashInUnorderedSet(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet,
+                          std::array<std::uint64_t, 2> hash) {
     return uSet.find(hash) != uSet.end();
 }
 
-std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory) {
-    std::string baseFilename = file.stem();
-    std::string fileExtension = file.extension();
-    int counter = 0;
-    std::string fileInDirectory;
-    std::string tempFileInDirectory;
-    tempFileInDirectory.append(directory).append("/").append(baseFilename).append("_");
-    do {
-        fileInDirectory = tempFileInDirectory;
-        fileInDirectory.append(std::to_string(counter)).append(fileExtension);
-        counter++;
-    } while (std::filesystem::exists(fileInDirectory));
-    return fileInDirectory;
-}
 
 int checkFileFs(const std::filesystem::path &path) {
     struct statfs fileFs;

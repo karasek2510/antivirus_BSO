@@ -1,3 +1,4 @@
+#include "../headers/Quarantine.h"
 
 #include <filesystem>
 #include <iostream>
@@ -7,10 +8,28 @@
 #include <cryptopp/osrng.h>
 
 #include "../headers/CryptoFuntions.h"
-#include "../headers/FileManagement.h"
-#include "../headers/Quarantine.h"
 
 extern std::filesystem::path quarantineDirectory;
+
+std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory) {
+    std::string baseFilename = file.stem();
+    std::string fileExtension = file.extension();
+    int counter = 0;
+    std::string fileInDirectory;
+    std::string tempFileInDirectory;
+    tempFileInDirectory.append(directory).append("/").append(baseFilename).append("_");
+    try{
+        do {
+            fileInDirectory = tempFileInDirectory;
+            fileInDirectory.append(std::to_string(counter)).append(fileExtension);
+            counter++;
+        } while (std::filesystem::exists(fileInDirectory));
+    }catch (std::exception &ex){
+        std::cerr << "Unable to open quarantine directory \n";
+        return "";
+    }
+    return fileInDirectory;
+}
 
 template<std::size_t SIZE>
 std::string arrayToHexString(const std::array<std::byte, SIZE> &array) {
@@ -41,11 +60,21 @@ bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
                       const std::array<std::byte, SIZE_IV> &iv) {
 
     std::stringstream fileContent;
+    time_t now = time(0);
+    std::string originalFilename = originalLocation.filename();
+    std::string parentPath;
+    try{
+        parentPath = std::filesystem::canonical(originalLocation.parent_path());
+    }catch (std::filesystem::filesystem_error ex){
+        std::cerr << "Cannot resolve parent path \n";
+        return false;
+    }
     fileContent << "Filename: " << filename << "\n";
-    fileContent << "Original location: " << originalLocation.string() << "\n";
+    fileContent << "Original location: " <<  parentPath.append("/").append(originalFilename)<< "\n";
     fileContent << "Permissions: " << static_cast<int>(perms) << "\n";
     fileContent << "Key: " << arrayToHexString<CryptoPP::AES::DEFAULT_KEYLENGTH>(key) << "\n";
     fileContent << "IV: " << arrayToHexString<CryptoPP::AES::BLOCKSIZE>(iv) << "\n";
+    fileContent << "Creation time: " << ctime(&now) << "\n";
     std::ofstream outfile(infoFilePath);
     if (!outfile) {
         return false;
@@ -57,16 +86,15 @@ bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
 
 bool doQuarantine(const std::filesystem::path &path) {
     std::filesystem::path fullPathInQuarantine = getFullPathQuarantine(path, quarantineDirectory);
-
+    if(fullPathInQuarantine==""){
+        return false;
+    }
     std::filesystem::perms perms = std::filesystem::status(path).permissions();
 
     CryptoPP::AutoSeededRandomPool rng{};
 
-    // Generate a random Key
     std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> key{};
     rng.GenerateBlock(reinterpret_cast<byte *>(key.data()), key.size());
-
-    // Generate a random IV
     std::array<std::byte, CryptoPP::AES::BLOCKSIZE> iv{};
     rng.GenerateBlock(reinterpret_cast<byte *>(iv.data()), iv.size());
 
@@ -87,8 +115,7 @@ bool doQuarantine(const std::filesystem::path &path) {
 
     bool infoStatus = generateInfoFile<CryptoPP::AES::DEFAULT_KEYLENGTH, CryptoPP::AES::BLOCKSIZE>(infoFilePath,
                                                                                                    fullPathInQuarantine.filename(),
-                                                                                                   path, perms, key,
-                                                                                                   iv);
+                                                                                                   path, perms, key,iv);
     if (!infoStatus) {
         std::cerr << "Cannot generate info file" << '\n';
         return false;

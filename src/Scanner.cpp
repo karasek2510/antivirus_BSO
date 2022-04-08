@@ -40,7 +40,7 @@ bool scanFile(const std::filesystem::path path) {
         std::cout << regularFilePath.string() << " -> Cannot evaluate hash" << "\n";
         return false;
     }
-    if (!isHexInUnorderedSet(hashesSet, md5.value())) {
+    if (!isHashInUnorderedSet(hashesSet, md5.value())) {
         std::cout << regularFilePath.string() << " -> OK" << "\n";
         return false;
     }

@@ -1,5 +1,6 @@
-
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+
+#include "../headers/CryptoFuntions.h"
 
 #include <iomanip>
 #include <iostream>
@@ -11,8 +12,6 @@
 #include <cryptopp/files.h>
 #include <cryptopp/md5.h>
 #include <cryptopp/modes.h>
-
-#include "../headers/CryptoFuntions.h"
 
 std::array<std::uint64_t, 2> byteArray16ToUint64s(std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> array) {
     std::array<std::uint64_t, 2> result{};
