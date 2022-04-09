@@ -1,5 +1,0 @@
-- nie moze skanowac danger
-- pliki specjalne
-- jakis pasek postepu
-- lepsze komunikaty bledow
-- podazanie na linkiem przy kwarantannie
