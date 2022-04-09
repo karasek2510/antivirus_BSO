@@ -10,8 +10,8 @@
 std::array<std::uint64_t, 2> stringHashToUint64s(const std::string &strHash) {
     char delimiter = ',';
     unsigned long index = strHash.find(delimiter);
-    std::uint64_t value1 = std::stol(strHash.substr(0, index));
-    std::uint64_t value2 = std::stol(strHash.substr(index + 1));
+    std::uint64_t value1 = std::stoull(strHash.substr(0, index));
+    std::uint64_t value2 = std::stoull(strHash.substr(index + 1));
     return std::array<std::uint64_t, 2>{value1, value2};
 }
 
@@ -37,9 +37,9 @@ bool isHashInUnorderedSet(std::unordered_set<std::array<std::uint64_t, 2>, HashA
 
 
 int checkFileFs(const std::filesystem::path &path) {
-    struct statfs fileFs;
+    struct statfs fileFs{};
     if (statfs(path.c_str(), &fileFs) != 0) {
         return -1;
     }
-    return fileFs.f_type;
+    return static_cast<int>(fileFs.f_type);
 }

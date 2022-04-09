@@ -8,7 +8,7 @@
 #include "../headers/Main.h"
 #include "../headers/Quarantine.h"
 
-bool scanFile(const std::filesystem::path path) {
+bool scanFile(const std::filesystem::path& path) {
     if (checkFileFs(path) != 61267) {
         return false;
     }

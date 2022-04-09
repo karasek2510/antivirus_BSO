@@ -36,13 +36,16 @@ int main(int argc, char **argv) {
     hash->add_option("file", fileToHash, "File to be hashed")
             ->check(CLI::ExistingFile)
             ->required();
+    auto showQuarantine = app.add_subcommand("showQuarantine", "Show files that are in quarantine");
+
 
     CLI11_PARSE(app, argc, argv)
-    if (!(*restore || *scan || *hash)) {
+    if (!(*restore || *scan || *hash || *showQuarantine)) {
         std::cout << "Parameters are required" << "\n";
         std::cout << "Run with --help for more information." << "\n";
         return EXIT_FAILURE;
     }
+
     if (*hash) {
         std::cout << "Computing hash of " << fileToHash.string() << "\n";
         std::optional<std::array<std::uint64_t, 2>> hashFromFile = md5FromFile(fileToHash);
@@ -57,30 +60,48 @@ int main(int argc, char **argv) {
     std::string homedir = getenv("HOME");
     quarantineDirectory = homedir + "/Q";
     std::cout << "Quarantine directory: " << quarantineDirectory.string() << "\n";
+
+
     if (!std::filesystem::exists(quarantineDirectory)) {
         std::cout << "Creating quarantine directory..." << "\n";
         if (!std::filesystem::create_directory(quarantineDirectory)) {
+            alterQuarantinePermissions(0);
             return EXIT_FAILURE;
         }
     }
+
+    if(!alterQuarantinePermissions(448)){
+        return EXIT_FAILURE;
+    }
+
+    if(*showQuarantine){
+        showFilesInQuarantine();
+        alterQuarantinePermissions(0);
+        return EXIT_SUCCESS;
+    }
+
     if (*scan) {
         std::cout << "Loading hashes..." << "\n";
         if (!getFileContent(hashesSet, hashes)) {
             std::cerr << "Unable to open file containing hashes" << "\n";
+            alterQuarantinePermissions(0);
             return EXIT_FAILURE;
         }
 
         std::cout << "Starting scanning:" << "\n";
         scanFiles(target);
         std::cout << "Scan has been finished! \n";
+        alterQuarantinePermissions(0);
         return EXIT_SUCCESS;
     }
     if (*restore) {
         if (!restoreFromQuarantine(restoreFilename)) {
             std::cerr << "File from quarantine could not be restored" << "\n";
+            alterQuarantinePermissions(0);
             return EXIT_FAILURE;
         }
         std::cout << "File from quarantine was restored" << "\n";
+        alterQuarantinePermissions(0);
         return EXIT_SUCCESS;
     }
 }

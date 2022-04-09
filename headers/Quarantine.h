@@ -2,8 +2,10 @@
 #ifndef ANTIVIRUS_QUARANTINE_H
 #define ANTIVIRUS_QUARANTINE_H
 
+#include <filesystem>
 #include <string>
 #include <vector>
+
 
 
 std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory);
@@ -23,5 +25,10 @@ bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
                       const std::array<std::byte, SIZE_IV>  &iv);
 
 bool restoreFromQuarantine(const std::filesystem::path &filename);
+
+void showFilesInQuarantine();
+
+bool alterQuarantinePermissions(int perms);
+
 
 #endif //ANTIVIRUS_QUARANTINE_H
