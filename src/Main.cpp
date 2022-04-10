@@ -120,6 +120,7 @@ int main(int argc, char **argv) {
             return EXIT_SUCCESS;
         }
     }catch (std::runtime_error ex){
+        alterQuarantinePermissions(0);
         return EXIT_FAILURE;
     }
 }
