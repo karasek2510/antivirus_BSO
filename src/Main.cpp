@@ -17,8 +17,10 @@ void INThandler(int sig){
     signal(sig, SIG_IGN);
     printf("\nDo you really want to quit? [y/n] ");
     c = getchar();
-    if (c == 'y' || c == 'Y')
+    if (c == 'y' || c == 'Y'){
+        alterQuarantinePermissions(0);
         throw std::runtime_error("EXITING");
+    }
     else
         signal(SIGINT, INThandler);
     getchar();
@@ -121,7 +123,6 @@ int main(int argc, char **argv) {
             return EXIT_SUCCESS;
         }
     }catch (std::runtime_error ex){
-        alterQuarantinePermissions(0);
         return EXIT_FAILURE;
     }
 }
