@@ -24,7 +24,7 @@ bool scanFile(const std::filesystem::path& path) {
                 std::cout << path.string() << " -> Cannot read symlink" << "\n";
                 return false;
             }
-            if (!std::filesystem::is_regular_file(regularFilePath) || checkFileFs(regularFilePath) != 61267) {
+            if (!std::filesystem::is_regular_file(regularFilePath)) {
                 std::cout << regularFilePath.string() << " -> Cannot read file" << "\n";
                 return false;
             }
