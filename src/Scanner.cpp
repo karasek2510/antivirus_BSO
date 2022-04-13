@@ -8,6 +8,8 @@
 #include "../headers/Main.h"
 #include "../headers/Quarantine.h"
 
+std::vector<std::string> quarantinedPaths;
+
 bool scanFile(const std::filesystem::path& path) {
     if (checkFileFs(path) != 61267) {
         return false;
@@ -34,14 +36,13 @@ bool scanFile(const std::filesystem::path& path) {
         std::cout << regularFilePath.string() << " -> Empty file" << "\n";
         return false;
     }
-    std::cout << "\33[2K\r" << path << std::flush;
     std::optional<std::array<std::uint64_t, 2>> md5 = md5FromFile(regularFilePath);
     if (!md5) {
         std::cout << regularFilePath.string() << " -> Cannot evaluate hash" << "\n";
         return false;
     }
     if (!isHashInUnorderedSet(hashesSet, md5.value())) {
-//        std::cout << regularFilePath.string() << " -> OK" << "\n";
+        std::cout << regularFilePath.string() << " -> OK" << "\n";
         return false;
     }
     std::cout << regularFilePath.string() << " -> MATCHED" << "\n";
@@ -49,6 +50,7 @@ bool scanFile(const std::filesystem::path& path) {
         std::cerr << "Quarantine was not successfully imposed" << "\n";
         return false;
     }
+    quarantinedPaths.push_back(path.string());
     std::cout << "Quarantine was successfully imposed" << "\n";
     return true;
 
@@ -69,5 +71,14 @@ void scanFiles(std::filesystem::path &path) {
             std::cout << ex.what() << "\n";
         }
         std::cout << "Scanned files: " << counter << "\n";
+        if(quarantinedPaths.empty()){
+            std::cout << "No files have been put in quarantine!\n";
+        }else{
+            std::cout << "Files which have been put in quarantine: \n";
+            for(std::string s : quarantinedPaths){
+                std::cout << "\t- " << s << "\n";
+            }
+            std::cout << "For detailed information use subcommand \"showQuarantine\".\n";
+        }
     }
 }
