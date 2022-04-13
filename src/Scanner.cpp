@@ -34,14 +34,14 @@ bool scanFile(const std::filesystem::path& path) {
         std::cout << regularFilePath.string() << " -> Empty file" << "\n";
         return false;
     }
-
+    std::cout << "\33[2K\r" << path << std::flush;
     std::optional<std::array<std::uint64_t, 2>> md5 = md5FromFile(regularFilePath);
     if (!md5) {
         std::cout << regularFilePath.string() << " -> Cannot evaluate hash" << "\n";
         return false;
     }
     if (!isHashInUnorderedSet(hashesSet, md5.value())) {
-        std::cout << regularFilePath.string() << " -> OK" << "\n";
+//        std::cout << regularFilePath.string() << " -> OK" << "\n";
         return false;
     }
     std::cout << regularFilePath.string() << " -> MATCHED" << "\n";

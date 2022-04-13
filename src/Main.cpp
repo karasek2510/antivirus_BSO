@@ -26,8 +26,9 @@ void INThandler(int sig){
 
 int main(int argc, char **argv) {
 
-    signal(SIGINT, INThandler);
+
     try{
+        signal(SIGINT, INThandler);
         CLI::App app{"Antivirus project by Szymon Kasperek"};
 
         auto restore = app.add_subcommand("restore", "Restore from quarantine");
