@@ -13,37 +13,13 @@
 #include <cryptopp/md5.h>
 #include <cryptopp/modes.h>
 
-std::array<std::uint64_t, 2> byteArray16ToUint64s(std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> array) {
-    std::array<std::uint64_t, 2> result{};
-    uint64_t value1 =
-            static_cast<uint64_t>(array[7]) |
-            static_cast<uint64_t>(array[6]) << 8 |
-            static_cast<uint64_t>(array[5]) << 16 |
-            static_cast<uint64_t>(array[4]) << 24 |
-            static_cast<uint64_t>(array[3]) << 32 |
-            static_cast<uint64_t>(array[2]) << 40 |
-            static_cast<uint64_t>(array[1]) << 48 |
-            static_cast<uint64_t>(array[0]) << 56;
-    uint64_t value2 =
-            static_cast<uint64_t>(array[15]) |
-            static_cast<uint64_t>(array[14]) << 8 |
-            static_cast<uint64_t>(array[13]) << 16 |
-            static_cast<uint64_t>(array[12]) << 24 |
-            static_cast<uint64_t>(array[11]) << 32 |
-            static_cast<uint64_t>(array[10]) << 40 |
-            static_cast<uint64_t>(array[9]) << 48 |
-            static_cast<uint64_t>(array[8]) << 56;
-    result[0] = value1;
-    result[1] = value2;
-    return result;
-}
+#include "../headers/DataManagement.h"
 
-
-std::optional<std::array<std::uint64_t, 2>> md5FromFile(const std::string &path) {
+std::optional<std::array<std::uint64_t, 2>> Md5FromFile(const std::string &file) {
     CryptoPP::Weak1::MD5 md5;
     std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> hashArray{};
     try {
-        CryptoPP::FileSource fs(path.c_str(), true,
+        CryptoPP::FileSource fs(file.c_str(), true,
                                 new CryptoPP::HashFilter(md5,
                                                          new CryptoPP::ArraySink(hashArray.data(),
                                                                                  CryptoPP::Weak1::MD5::DIGESTSIZE)
@@ -52,11 +28,11 @@ std::optional<std::array<std::uint64_t, 2>> md5FromFile(const std::string &path)
     catch (CryptoPP::FileStore::Err &err) {
         return std::nullopt;
     }
-    std::array<std::uint64_t, 2> hash = byteArray16ToUint64s(hashArray);
+    std::array<std::uint64_t, 2> hash = ByteArray16ToUint64s(hashArray);
     return hash;
 }
 
-void encryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
+void EncryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
                 const std::string &filename_in, const std::string &filename_out) {
 
@@ -73,7 +49,7 @@ void encryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &k
                                  cipher, new CryptoPP::FileSink{out}}};
 }
 
-void decryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
+void DecryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
                 const std::string &filename_in, const std::string &filename_out) {
 

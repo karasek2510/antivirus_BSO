@@ -5,13 +5,14 @@
 #include <iterator>
 #include <vector>
 
+#include <cryptopp/aes.h>
 #include <cryptopp/osrng.h>
 
 #include "../headers/CryptoFuntions.h"
+#include "../headers/DataManagement.h"
 
-extern std::filesystem::path quarantineDirectory;
 
-std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory) {
+std::filesystem::path GetFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory) {
     std::string baseFilename = file.stem();
     std::string fileExtension = file.extension();
     int counter = 0;
@@ -31,30 +32,8 @@ std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, c
     return fileInDirectory;
 }
 
-template<std::size_t SIZE>
-std::string arrayToHexString(const std::array<std::byte, SIZE> &array) {
-    std::ostringstream ss;
-    ss << std::hex << std::uppercase << std::setfill('0');
-    ss << std::hex << std::uppercase << std::setfill('0');
-    for (std::byte b: array) {
-        ss << std::setw(2) << static_cast<int>(b);
-    }
-    return ss.str();
-}
-
-template<std::size_t SIZE>
-std::array<std::byte, SIZE> hexStringToArray(const std::string &hex) {
-    std::array<std::byte, SIZE> bytes;
-    for (unsigned int i = 0; i < hex.length(); i += 2) {
-        std::string byteString = hex.substr(i, 2);
-        auto byte = static_cast<std::byte>(strtol(byteString.c_str(), nullptr, 16));
-        bytes[i/2] = byte;
-    }
-    return bytes;
-}
-
 template<std::size_t SIZE_KEY, std::size_t SIZE_IV>
-bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::string &filename,
+bool GenerateInfoFile(const std::filesystem::path &infoFilePath, const std::string &filename,
                       const std::filesystem::path &originalLocation,
                       std::filesystem::perms perms, const std::array<std::byte, SIZE_KEY> &key,
                       const std::array<std::byte, SIZE_IV> &iv) {
@@ -75,8 +54,8 @@ bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
     fileContent << "Filename: " << filename << "\n";
     fileContent << "Original location: " <<  parentPath.append("/").append(originalFilename)<< "\n";
     fileContent << "Permissions: " << static_cast<int>(perms) << "\n";
-    fileContent << "Key: " << arrayToHexString<CryptoPP::AES::DEFAULT_KEYLENGTH>(key) << "\n";
-    fileContent << "IV: " << arrayToHexString<CryptoPP::AES::BLOCKSIZE>(iv) << "\n";
+    fileContent << "Key: " << ArrayToHexString<CryptoPP::AES::DEFAULT_KEYLENGTH>(key) << "\n";
+    fileContent << "IV: " << ArrayToHexString<CryptoPP::AES::BLOCKSIZE>(iv) << "\n";
     fileContent << "Creation time: " << oss.str() << "\n";
     std::ofstream outfile(infoFilePath);
     if (!outfile) {
@@ -87,8 +66,8 @@ bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
     return true;
 }
 
-bool doQuarantine(const std::filesystem::path &path) {
-    std::filesystem::path fullPathInQuarantine = getFullPathQuarantine(path, quarantineDirectory);
+bool DoQuarantine(const std::filesystem::path &path) {
+    std::filesystem::path fullPathInQuarantine = GetFullPathQuarantine(path, quarantineDirectory);
     if(fullPathInQuarantine==""){
         return false;
     }
@@ -102,7 +81,7 @@ bool doQuarantine(const std::filesystem::path &path) {
     rng.GenerateBlock(reinterpret_cast<byte *>(iv.data()), iv.size());
 
     std::cout << "Encrypting file..." << "\n";
-    encryptAES(key, iv, path, fullPathInQuarantine);
+    EncryptAES(key, iv, path, fullPathInQuarantine);
 
     std::cout << path.string() << " was copied to " << fullPathInQuarantine.string() << "\n";
 
@@ -115,9 +94,9 @@ bool doQuarantine(const std::filesystem::path &path) {
     infoFilePath.append(quarantineDirectory).append("/.")
             .append(fullPathInQuarantine.filename()).append(".info");
 
-    bool infoStatus = generateInfoFile<CryptoPP::AES::DEFAULT_KEYLENGTH, CryptoPP::AES::BLOCKSIZE>(infoFilePath,
+    bool infoStatus = GenerateInfoFile<CryptoPP::AES::DEFAULT_KEYLENGTH, CryptoPP::AES::BLOCKSIZE>(infoFilePath,
                                                                                                    fullPathInQuarantine.filename(),
-                                                                                                   path, perms, key,iv);
+                                                                                                   path, perms, key, iv);
     if (!infoStatus) {
         std::cerr << "Cannot generate info file" << '\n';
         return false;
@@ -126,7 +105,7 @@ bool doQuarantine(const std::filesystem::path &path) {
     return true;
 }
 
-bool restoreFromQuarantine(const std::filesystem::path &filename) {
+bool RestoreFromQuarantine(const std::filesystem::path &filename) {
     std::filesystem::path fileToRestorePath = quarantineDirectory.string().append("/").append(filename);
     std::cout << "File to be restored: " << fileToRestorePath.string() << "\n";
     std::filesystem::path infoFilePath = quarantineDirectory.string().append("/.")
@@ -148,11 +127,11 @@ bool restoreFromQuarantine(const std::filesystem::path &filename) {
     }
     std::filesystem::path originalLocationPath = data.at(1);
     int perms = static_cast<int>(stol(data.at(2)));
-    std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> tempKey = hexStringToArray<CryptoPP::AES::DEFAULT_KEYLENGTH>(
+    std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> tempKey = HexStringToArray<CryptoPP::AES::DEFAULT_KEYLENGTH>(
             data.at(3));
-    std::array<std::byte, CryptoPP::AES::BLOCKSIZE> tempIV = hexStringToArray<CryptoPP::AES::BLOCKSIZE>(data.at(4));
+    std::array<std::byte, CryptoPP::AES::BLOCKSIZE> tempIV = HexStringToArray<CryptoPP::AES::BLOCKSIZE>(data.at(4));
     std::cout << "Decrypting and moving file to: " << originalLocationPath << "\n";
-    decryptAES(tempKey, tempIV, fileToRestorePath, originalLocationPath);
+    DecryptAES(tempKey, tempIV, fileToRestorePath, originalLocationPath);
     try{
         std::filesystem::permissions(originalLocationPath, static_cast<std::filesystem::perms>(perms));
     }catch (std::filesystem::filesystem_error& ex){
@@ -164,7 +143,7 @@ bool restoreFromQuarantine(const std::filesystem::path &filename) {
     return true;
 }
 
-void showFilesInQuarantine(){
+void ShowFilesInQuarantine(){
     for(const auto &file: std::filesystem::directory_iterator(quarantineDirectory)){
         if(file.path().filename().c_str()[0]=='.'){
             std::ifstream infile(file.path());
@@ -187,7 +166,7 @@ void showFilesInQuarantine(){
     }
 }
 
-bool alterQuarantinePermissions(int perms){
+bool AlterQuarantinePermissions(int perms){
     try{
         std::filesystem::permissions(quarantineDirectory, static_cast<std::filesystem::perms>(perms));
     }catch (std::filesystem::filesystem_error& ex){

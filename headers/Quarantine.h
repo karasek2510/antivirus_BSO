@@ -6,29 +6,23 @@
 #include <string>
 #include <vector>
 
+extern std::filesystem::path quarantineDirectory;
 
-
-std::filesystem::path getFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory);
-
-template<std::size_t SIZE>
-std::string arrayToHexString(const std::array<std::byte, SIZE> &array);
-
-template<std::size_t SIZE>
-std::array<std::byte, SIZE> hexStringToArray(const std::string &hex);
-
-bool doQuarantine(const std::filesystem::path &path);
+std::filesystem::path GetFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory);
 
 template<std::size_t SIZE_KEY,std::size_t SIZE_IV>
-bool generateInfoFile(const std::filesystem::path &infoFilePath, const std::string &filename,
+bool GenerateInfoFile(const std::filesystem::path &infoFilePath, const std::string &filename,
                       const std::filesystem::path &originalLocation,
                       std::filesystem::perms perms, const std::array<std::byte, SIZE_KEY>  &key,
                       const std::array<std::byte, SIZE_IV>  &iv);
 
-bool restoreFromQuarantine(const std::filesystem::path &filename);
+bool DoQuarantine(const std::filesystem::path &path);
 
-void showFilesInQuarantine();
+bool RestoreFromQuarantine(const std::filesystem::path &filename);
 
-bool alterQuarantinePermissions(int perms);
+void ShowFilesInQuarantine();
+
+bool AlterQuarantinePermissions(int perms);
 
 
 #endif //ANTIVIRUS_QUARANTINE_H

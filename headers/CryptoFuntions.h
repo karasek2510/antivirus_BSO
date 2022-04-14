@@ -15,17 +15,14 @@
 #include <cryptopp/md5.h>
 #include <cryptopp/modes.h>
 
-std::array<std::uint64_t, 2> byteArray16ToUint64s(std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> array);
+std::optional<std::array<std::uint64_t, 2>> Md5FromFile(const std::string &file);
 
-std::optional<std::array<std::uint64_t, 2>> md5FromFile(const std::string &file);
-
-void encryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
+void EncryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
                 const std::string &filename_in, const std::string &filename_out);
 
-void decryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
+void DecryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
                 const std::string &filename_in, const std::string &filename_out);
-
 
 #endif //ANT_CryptoFunctions_H

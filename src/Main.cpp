@@ -1,3 +1,4 @@
+#include "../headers/Main.h"
 
 #include <filesystem>
 #include <iostream>
@@ -5,8 +6,8 @@
 #include <csignal>
 
 #include "../libs/CLI11.hpp"
+
 #include "../headers/CryptoFuntions.h"
-#include "../headers/FileManagement.h"
 #include "../headers/Scanner.h"
 #include "../headers/Quarantine.h"
 
@@ -18,7 +19,7 @@ void INThandler(int sig){
     printf("\nDo you really want to quit? [y/n] ");
     c = getchar();
     if (c == 'y' || c == 'Y'){
-        alterQuarantinePermissions(0);
+        AlterQuarantinePermissions(0);
         throw std::runtime_error("EXITING");
     }
     else
@@ -36,7 +37,7 @@ int main(int argc, char **argv) {
         auto restore = app.add_subcommand("restore", "Restore from quarantine");
 
         std::string restoreFilename;
-        restore->add_option("file", restoreFilename, "File to be restored")->required();
+        restore->add_option("file", restoreFilename, "Filename in quarantine (can be checked in \"showQuarantine\" subcommand) to be restored")->required();
 
         auto scan = app.add_subcommand("scan", "Scan targets");
         std::filesystem::path target;
@@ -66,12 +67,15 @@ int main(int argc, char **argv) {
 
         if (*hash) {
             std::cout << "Computing hash of " << fileToHash.string() << "\n";
-            std::optional<std::array<std::uint64_t, 2>> hashFromFile = md5FromFile(fileToHash);
+            std::optional<std::array<std::uint64_t, 2>> hashFromFile = Md5FromFile(fileToHash);
             if (!hashFromFile) {
                 std::cerr << "Hash could not be computed" << "\n";
                 return EXIT_FAILURE;
             }
-            std::cout << "Result: " << hashFromFile.value()[0] << "," << hashFromFile.value()[1] << "\n";
+            std::stringstream ssHex;
+            ssHex <<  std::setw(16) << std::setfill('0') << std::hex << hashFromFile.value()[0];
+            ssHex <<  std::setw(16) << std::setfill('0') << std::hex << hashFromFile.value()[1];
+            std::cout << "Result: " << ssHex.str() << "\n";
             return EXIT_SUCCESS;
         }
 
@@ -83,43 +87,42 @@ int main(int argc, char **argv) {
         if (!std::filesystem::exists(quarantineDirectory)) {
             std::cout << "Creating quarantine directory..." << "\n";
             if (!std::filesystem::create_directory(quarantineDirectory)) {
-                alterQuarantinePermissions(0);
                 return EXIT_FAILURE;
             }
         }
 
-        if(!alterQuarantinePermissions(448)){
+        if(!AlterQuarantinePermissions(448)){
             return EXIT_FAILURE;
         }
 
         if(*showQuarantine){
-            showFilesInQuarantine();
-            alterQuarantinePermissions(0);
+            ShowFilesInQuarantine();
+            AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
 
         if (*scan) {
             std::cout << "Loading hashes..." << "\n";
-            if (!getFileContent(hashesSet, hashes)) {
+            if (!GetHashesFromFile(hashesSet, hashes)) {
                 std::cerr << "Unable to open file containing hashes" << "\n";
-                alterQuarantinePermissions(0);
+                AlterQuarantinePermissions(0);
                 return EXIT_FAILURE;
             }
 
             std::cout << "Starting scanning:" << "\n";
-            scanFiles(target);
+            ScanFiles(target);
             std::cout << "Scan has been finished! \n";
-            alterQuarantinePermissions(0);
+            AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
         if (*restore) {
-            if (!restoreFromQuarantine(restoreFilename)) {
+            if (!RestoreFromQuarantine(restoreFilename)) {
                 std::cerr << "File from quarantine could not be restored" << "\n";
-                alterQuarantinePermissions(0);
+                AlterQuarantinePermissions(0);
                 return EXIT_FAILURE;
             }
             std::cout << "File from quarantine was restored" << "\n";
-            alterQuarantinePermissions(0);
+            AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
     }catch (std::runtime_error ex){
