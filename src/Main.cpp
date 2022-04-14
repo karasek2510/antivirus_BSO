@@ -123,7 +123,6 @@ int main(int argc, char **argv) {
             return EXIT_SUCCESS;
         }
     }catch (std::runtime_error ex){
-
         return EXIT_FAILURE;
     }
 }
