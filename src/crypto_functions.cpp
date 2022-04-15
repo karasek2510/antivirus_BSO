@@ -1,6 +1,6 @@
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1 // required to hide compiler warning
 
-#include "../headers/CryptoFuntions.h"
+#include "../headers/crypto_functions.h"
 
 #include <iomanip>
 #include <iostream>
@@ -13,7 +13,7 @@
 #include <cryptopp/md5.h>
 #include <cryptopp/modes.h>
 
-#include "../headers/DataManagement.h"
+#include "../headers/data_management.h"
 
 // computing hash of the file
 std::optional<std::array<std::uint64_t, 2>> Md5FromFile(const std::string &file) {

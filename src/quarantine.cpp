@@ -1,4 +1,4 @@
-#include "../headers/Quarantine.h"
+#include "../headers/quarantine.h"
 
 #include <filesystem>
 #include <iostream>
@@ -8,8 +8,8 @@
 #include <cryptopp/aes.h>
 #include <cryptopp/osrng.h>
 
-#include "../headers/CryptoFuntions.h"
-#include "../headers/Main.h"
+#include "../headers/crypto_functions.h"
+#include "../headers/main.h"
 
 // using global variable from Main.h
 std::filesystem::path quarantineDirectory;

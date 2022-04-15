@@ -1,11 +1,11 @@
-#include "../headers/Scanner.h"
+#include "../headers/scanner.h"
 
 #include <filesystem>
 #include <iostream>
 #include <string>
 
-#include "../headers/CryptoFuntions.h"
-#include "../headers/Quarantine.h"
+#include "../headers/crypto_functions.h"
+#include "../headers/quarantine.h"
 
 // global variable containing list of files which were added to quarantine in scan
 std::vector<std::string> filesAddedToQuarantine;
@@ -94,17 +94,20 @@ void ScanFiles(std::filesystem::path &path) {
 }
 
 // Loading hashes from file
-bool
-GetHashesFromFile(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file) {
+bool GetHashesFromFile(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file) {
     std::ifstream fileIn(file);
     if (!fileIn) {
         return false;
     }
     std::string line;
-    while (std::getline(fileIn, line)) {
-        if (!line.empty()) {
-            uSet.insert(StringHashToUint64s(line));
+    try{
+        while (std::getline(fileIn, line)) {
+            if (!line.empty()) {
+                uSet.insert(StringHashToUint64s(line));
+            }
         }
+    }catch (std::invalid_argument &ex){
+        return false;
     }
     fileIn.close();
     return true;

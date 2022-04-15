@@ -1,4 +1,4 @@
-#include "../headers/Main.h"
+#include "../headers/main.h"
 
 #include <csignal>
 #include <filesystem>
@@ -7,9 +7,9 @@
 
 #include "../libs/CLI11.hpp"
 
-#include "../headers/CryptoFuntions.h"
-#include "../headers/Scanner.h"
-#include "../headers/Quarantine.h"
+#include "../headers/crypto_functions.h"
+#include "../headers/scanner.h"
+#include "../headers/quarantine.h"
 
 
 // function handling ctrl+c signal
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
         if (*scan) {
             std::cout << "Loading hashes..." << "\n";
             if (!GetHashesFromFile(hashesSet, hashes)) { // loading hashes
-                std::cerr << "Unable to open file containing hashes" << "\n";
+                std::cerr << "Unable to read file containing hashes" << "\n";
                 AlterQuarantinePermissions(0);
                 return EXIT_FAILURE;
             }

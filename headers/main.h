@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "DataManagement.h"
+#include "data_management.h"
 
 // global variable containing hashes which are used in scanning
 extern std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> hashesSet;
