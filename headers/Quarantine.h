@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-extern std::filesystem::path quarantineDirectory;
 
 std::filesystem::path GetFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory);
 

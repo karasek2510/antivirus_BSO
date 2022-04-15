@@ -9,6 +9,7 @@
 
 #include <cryptopp/md5.h>
 
+// custom class to implement hash function for std::array of uint64_t
 class HashArrayUint64_t {
 public:
     size_t operator()(const std::array<std::uint64_t, 2> &arr) const {

@@ -10,12 +10,14 @@
 
 #include <cryptopp/md5.h>
 
+// converting hash in hex string to array of 2 uint64_t
 std::array<std::uint64_t, 2> StringHashToUint64s(const std::string &strHash) {
     std::uint64_t value1 = std::stoull(strHash.substr(0,16),nullptr, 16);
     std::uint64_t value2 = std::stoull(strHash.substr(16,16),nullptr, 16);
     return std::array<std::uint64_t, 2>{value1, value2};
 }
 
+// checking filesystem of the file
 int CheckFileFs(const std::filesystem::path &path) {
     struct statfs fileFs{};
     if (statfs(path.c_str(), &fileFs) != 0) {
@@ -24,6 +26,7 @@ int CheckFileFs(const std::filesystem::path &path) {
     return static_cast<int>(fileFs.f_type);
 }
 
+// converting byte array to array of 2 uint64_t
 std::array<std::uint64_t, 2> ByteArray16ToUint64s(std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> array) {
     std::array<std::uint64_t, 2> result{};
     uint64_t value1 =

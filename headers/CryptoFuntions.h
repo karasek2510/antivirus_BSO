@@ -17,11 +17,11 @@
 
 std::optional<std::array<std::uint64_t, 2>> Md5FromFile(const std::string &file);
 
-void EncryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
+bool EncryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
                 const std::string &filename_in, const std::string &filename_out);
 
-void DecryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
+bool DecryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
                 const std::string &filename_in, const std::string &filename_out);
 

@@ -1,9 +1,9 @@
 #include "../headers/Main.h"
 
+#include <csignal>
 #include <filesystem>
 #include <iostream>
 #include <unordered_set>
-#include <csignal>
 
 #include "../libs/CLI11.hpp"
 
@@ -11,33 +11,31 @@
 #include "../headers/Scanner.h"
 #include "../headers/Quarantine.h"
 
-std::filesystem::path quarantineDirectory;
 
-void INThandler(int sig){
-    char  c;
+// function handling ctrl+c signal
+void CtrlCHandler(int sig) {
+    char c;
     signal(sig, SIG_IGN);
     printf("\nDo you really want to quit? [y/n] ");
     c = getchar();
-    if (c == 'y' || c == 'Y'){
+    if (c == 'y' || c == 'Y') {
         AlterQuarantinePermissions(0);
         throw std::runtime_error("EXITING");
-    }
-    else
-        signal(SIGINT, INThandler);
+    } else
+        signal(SIGINT, CtrlCHandler);
     getchar();
 }
 
 int main(int argc, char **argv) {
-
-
-    try{
-        signal(SIGINT, INThandler);
+    try {
+        signal(SIGINT, CtrlCHandler);
         CLI::App app{"Antivirus project by Szymon Kasperek"};
 
         auto restore = app.add_subcommand("restore", "Restore from quarantine");
 
         std::string restoreFilename;
-        restore->add_option("file", restoreFilename, "Filename in quarantine (can be checked in \"showQuarantine\" subcommand) to be restored")->required();
+        restore->add_option("file", restoreFilename,
+                            "Filename in quarantine (can be checked in \"showQuarantine\" subcommand) to be restored")->required();
 
         auto scan = app.add_subcommand("scan", "Scan targets");
         std::filesystem::path target;
@@ -57,53 +55,54 @@ int main(int argc, char **argv) {
                 ->required();
         auto showQuarantine = app.add_subcommand("showQuarantine", "Show files that are in quarantine");
 
-
         CLI11_PARSE(app, argc, argv)
+
+        // if no subcommand was typed
         if (!(*restore || *scan || *hash || *showQuarantine)) {
             std::cout << "Parameters are required" << "\n";
             std::cout << "Run with --help for more information." << "\n";
             return EXIT_FAILURE;
         }
-
+        // subcommand which compute and display hash of given file
         if (*hash) {
             std::cout << "Computing hash of " << fileToHash.string() << "\n";
             std::optional<std::array<std::uint64_t, 2>> hashFromFile = Md5FromFile(fileToHash);
-            if (!hashFromFile) {
+            if (!hashFromFile) { // if hash can't be computed
                 std::cerr << "Hash could not be computed" << "\n";
                 return EXIT_FAILURE;
             }
             std::stringstream ssHex;
-            ssHex <<  std::setw(16) << std::setfill('0') << std::hex << hashFromFile.value()[0];
-            ssHex <<  std::setw(16) << std::setfill('0') << std::hex << hashFromFile.value()[1];
+            ssHex << std::setw(16) << std::setfill('0') << std::hex << hashFromFile.value()[0];
+            ssHex << std::setw(16) << std::setfill('0') << std::hex << hashFromFile.value()[1];
             std::cout << "Result: " << ssHex.str() << "\n";
             return EXIT_SUCCESS;
         }
-
+        // building quarantine directory path
         std::string homedir = getenv("HOME");
-        quarantineDirectory = homedir + "/Q";
+        quarantineDirectory = homedir + "/.quarantine";
         std::cout << "Quarantine directory: " << quarantineDirectory.string() << "\n";
 
-
+        // creating quarantine directory if it doesn't exist
         if (!std::filesystem::exists(quarantineDirectory)) {
             std::cout << "Creating quarantine directory..." << "\n";
             if (!std::filesystem::create_directory(quarantineDirectory)) {
                 return EXIT_FAILURE;
             }
         }
-
-        if(!AlterQuarantinePermissions(448)){
+        // "opening" quarantine for next operations
+        if (!AlterQuarantinePermissions(448)) {
             return EXIT_FAILURE;
         }
-
-        if(*showQuarantine){
+        // subcommand which show files with stats in quarantine
+        if (*showQuarantine) {
             ShowFilesInQuarantine();
-            AlterQuarantinePermissions(0);
+            AlterQuarantinePermissions(0); // "closing" quarantine
             return EXIT_SUCCESS;
         }
-
+        // subcommand which scan given directory
         if (*scan) {
             std::cout << "Loading hashes..." << "\n";
-            if (!GetHashesFromFile(hashesSet, hashes)) {
+            if (!GetHashesFromFile(hashesSet, hashes)) { // loading hashes
                 std::cerr << "Unable to open file containing hashes" << "\n";
                 AlterQuarantinePermissions(0);
                 return EXIT_FAILURE;
@@ -115,6 +114,7 @@ int main(int argc, char **argv) {
             AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
+        // subcommand which restore specific file from quarantine
         if (*restore) {
             if (!RestoreFromQuarantine(restoreFilename)) {
                 std::cerr << "File from quarantine could not be restored" << "\n";
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
             AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
-    }catch (std::runtime_error ex){
+    } catch (std::runtime_error &ex) {
         return EXIT_FAILURE;
     }
 }

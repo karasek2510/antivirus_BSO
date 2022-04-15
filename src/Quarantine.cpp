@@ -9,9 +9,12 @@
 #include <cryptopp/osrng.h>
 
 #include "../headers/CryptoFuntions.h"
-#include "../headers/DataManagement.h"
+#include "../headers/Main.h"
 
+// using global variable from Main.h
+std::filesystem::path quarantineDirectory;
 
+// computing new name of the file before adding to quarantine to avoid duplications
 std::filesystem::path GetFullPathQuarantine(const std::filesystem::path &file, const std::filesystem::path &directory) {
     std::string baseFilename = file.stem();
     std::string fileExtension = file.extension();
@@ -19,19 +22,26 @@ std::filesystem::path GetFullPathQuarantine(const std::filesystem::path &file, c
     std::string fileInDirectory;
     std::string tempFileInDirectory;
     tempFileInDirectory.append(directory).append("/").append(baseFilename).append("_");
-    try{
+    try {
         do {
             fileInDirectory = tempFileInDirectory;
             fileInDirectory.append(std::to_string(counter)).append(fileExtension);
             counter++;
         } while (std::filesystem::exists(fileInDirectory));
-    }catch (std::exception &ex){
+    } catch (std::exception &ex) {
         std::cerr << "Unable to open quarantine directory \n";
         return "";
     }
     return fileInDirectory;
 }
 
+// generate info file for specific file in quarantine;
+// contains:
+//              - filename in quarantine
+//              - location of the file before moving to quarantine
+//              - permissions
+//              - key and iv used in AES
+//              - time of moving file to quarantine
 template<std::size_t SIZE_KEY, std::size_t SIZE_IV>
 bool GenerateInfoFile(const std::filesystem::path &infoFilePath, const std::string &filename,
                       const std::filesystem::path &originalLocation,
@@ -41,9 +51,9 @@ bool GenerateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
     std::stringstream fileContent;
     std::string originalFilename = originalLocation.filename();
     std::string parentPath;
-    try{
+    try {
         parentPath = std::filesystem::canonical(originalLocation.parent_path());
-    }catch (std::filesystem::filesystem_error& ex){
+    } catch (std::filesystem::filesystem_error &ex) {
         std::cerr << "Cannot resolve parent path \n";
         return false;
     }
@@ -52,7 +62,7 @@ bool GenerateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
     std::ostringstream oss;
     oss << std::put_time(&tm, "%d-%m-%Y_%H-%M-%S");
     fileContent << "Filename: " << filename << "\n";
-    fileContent << "Original location: " <<  parentPath.append("/").append(originalFilename)<< "\n";
+    fileContent << "Original location: " << parentPath.append("/").append(originalFilename) << "\n";
     fileContent << "Permissions: " << static_cast<int>(perms) << "\n";
     fileContent << "Key: " << ArrayToHexString<CryptoPP::AES::DEFAULT_KEYLENGTH>(key) << "\n";
     fileContent << "IV: " << ArrayToHexString<CryptoPP::AES::BLOCKSIZE>(iv) << "\n";
@@ -66,14 +76,15 @@ bool GenerateInfoFile(const std::filesystem::path &infoFilePath, const std::stri
     return true;
 }
 
+// moving file to quarantine
 bool DoQuarantine(const std::filesystem::path &path) {
     std::filesystem::path fullPathInQuarantine = GetFullPathQuarantine(path, quarantineDirectory);
-    if(fullPathInQuarantine==""){
+    if (fullPathInQuarantine == "") {
         return false;
     }
-    std::filesystem::perms perms = std::filesystem::status(path).permissions();
+    std::filesystem::perms perms = std::filesystem::status(path).permissions(); // saving file permissions
 
-    CryptoPP::AutoSeededRandomPool rng{};
+    CryptoPP::AutoSeededRandomPool rng{}; // object used to generate random key and iv
 
     std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> key{};
     rng.GenerateBlock(reinterpret_cast<byte *>(key.data()), key.size());
@@ -81,22 +92,24 @@ bool DoQuarantine(const std::filesystem::path &path) {
     rng.GenerateBlock(reinterpret_cast<byte *>(iv.data()), iv.size());
 
     std::cout << "Encrypting file..." << "\n";
-    EncryptAES(key, iv, path, fullPathInQuarantine);
-
+    if (!EncryptAES(key, iv, path, fullPathInQuarantine)) {
+        return false;
+    }
     std::cout << path.string() << " was copied to " << fullPathInQuarantine.string() << "\n";
 
-    if(std::remove(path.c_str())!=0){
+    if (std::remove(path.c_str()) != 0) {
         std::cerr << "Cannot remove file" << '\n';
         return false;
     }
 
     std::string infoFilePath;
     infoFilePath.append(quarantineDirectory).append("/.")
-            .append(fullPathInQuarantine.filename()).append(".info");
+            .append(fullPathInQuarantine.filename()).append(".info"); // building infoFile path
 
     bool infoStatus = GenerateInfoFile<CryptoPP::AES::DEFAULT_KEYLENGTH, CryptoPP::AES::BLOCKSIZE>(infoFilePath,
                                                                                                    fullPathInQuarantine.filename(),
-                                                                                                   path, perms, key, iv);
+                                                                                                   path, perms, key,
+                                                                                                   iv);
     if (!infoStatus) {
         std::cerr << "Cannot generate info file" << '\n';
         return false;
@@ -105,6 +118,7 @@ bool DoQuarantine(const std::filesystem::path &path) {
     return true;
 }
 
+// restoring file from quarantine
 bool RestoreFromQuarantine(const std::filesystem::path &filename) {
     std::filesystem::path fileToRestorePath = quarantineDirectory.string().append("/").append(filename);
     std::cout << "File to be restored: " << fileToRestorePath.string() << "\n";
@@ -118,7 +132,7 @@ bool RestoreFromQuarantine(const std::filesystem::path &filename) {
     }
     std::string line;
     std::vector<std::string> data;
-    while (std::getline(infile, line)) {
+    while (std::getline(infile, line)) { // reading info file
         std::stringstream ss(line);
         std::istream_iterator<std::string> begin(ss);
         std::istream_iterator<std::string> end;
@@ -131,10 +145,12 @@ bool RestoreFromQuarantine(const std::filesystem::path &filename) {
             data.at(3));
     std::array<std::byte, CryptoPP::AES::BLOCKSIZE> tempIV = HexStringToArray<CryptoPP::AES::BLOCKSIZE>(data.at(4));
     std::cout << "Decrypting and moving file to: " << originalLocationPath << "\n";
-    DecryptAES(tempKey, tempIV, fileToRestorePath, originalLocationPath);
-    try{
+    if (!DecryptAES(tempKey, tempIV, fileToRestorePath, originalLocationPath)) {
+        return false;
+    }
+    try {
         std::filesystem::permissions(originalLocationPath, static_cast<std::filesystem::perms>(perms));
-    }catch (std::filesystem::filesystem_error& ex){
+    } catch (std::filesystem::filesystem_error &ex) {
         std::cerr << "Cannot recover permissions\n";
     }
     if (!(std::filesystem::remove(infoFilePath) && std::filesystem::remove(fileToRestorePath))) {
@@ -143,9 +159,10 @@ bool RestoreFromQuarantine(const std::filesystem::path &filename) {
     return true;
 }
 
-void ShowFilesInQuarantine(){
-    for(const auto &file: std::filesystem::directory_iterator(quarantineDirectory)){
-        if(file.path().filename().c_str()[0]=='.'){
+// showing file in quarantine with simple stats
+void ShowFilesInQuarantine() {
+    for (const auto &file: std::filesystem::directory_iterator(quarantineDirectory)) {
+        if (file.path().filename().c_str()[0] == '.') {
             std::ifstream infile(file.path());
             if (!infile) {
                 std::cerr << "Cannot open " << file.path().string() << '\n';
@@ -166,10 +183,11 @@ void ShowFilesInQuarantine(){
     }
 }
 
-bool AlterQuarantinePermissions(int perms){
-    try{
+// altering permissions on quarantine directory
+bool AlterQuarantinePermissions(int perms) {
+    try {
         std::filesystem::permissions(quarantineDirectory, static_cast<std::filesystem::perms>(perms));
-    }catch (std::filesystem::filesystem_error& ex){
+    } catch (std::filesystem::filesystem_error &ex) {
         std::cerr << "Cannot change quarantine directory permissions \n";
         return false;
     }
