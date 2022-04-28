@@ -35,7 +35,8 @@ int main(int argc, char **argv) {
 
         std::string restoreFilename;
         restore->add_option("file", restoreFilename,
-                            "Filename in quarantine (can be checked in \"showQuarantine\" subcommand) to be restored")->required();
+                            "Filename in quarantine (can be checked in \"showQuarantine\" subcommand) to be restored")
+                            ->required();
 
         auto scan = app.add_subcommand("scan", "Scan targets");
         std::filesystem::path target;
@@ -55,10 +56,18 @@ int main(int argc, char **argv) {
                 ->required();
         auto showQuarantine = app.add_subcommand("showQuarantine", "Show files that are in quarantine");
 
+        auto monitor = app.add_subcommand("monitor","Monitoring directory recursively");
+        monitor->add_option("directory","Directory to be monitored")
+                ->check(CLI::ExistingDirectory)
+                ->required();
+        monitor->add_option("hashes", hashes, "File containing hashes")
+                ->check(CLI::ExistingFile)
+                ->required();
+
         CLI11_PARSE(app, argc, argv)
 
         // if no subcommand was typed
-        if (!(*restore || *scan || *hash || *showQuarantine)) {
+        if (!(*restore || *scan || *hash || *showQuarantine || *monitor)) {
             std::cout << "Parameters are required" << "\n";
             std::cout << "Run with --help for more information." << "\n";
             return EXIT_FAILURE;
@@ -114,6 +123,11 @@ int main(int argc, char **argv) {
             AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
+
+        if(*monitor){
+
+        }
+
         // subcommand which restore specific file from quarantine
         if (*restore) {
             if (!RestoreFromQuarantine(restoreFilename)) {
@@ -125,6 +139,8 @@ int main(int argc, char **argv) {
             AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
         }
+
+
     } catch (std::runtime_error &ex) {
         return EXIT_FAILURE;
     }
