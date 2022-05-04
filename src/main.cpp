@@ -10,6 +10,7 @@
 #include "../headers/crypto_functions.h"
 #include "../headers/scanner.h"
 #include "../headers/quarantine.h"
+#include "../headers/monitor.h"
 
 
 // function handling ctrl+c signal
@@ -56,13 +57,17 @@ int main(int argc, char **argv) {
                 ->required();
         auto showQuarantine = app.add_subcommand("showQuarantine", "Show files that are in quarantine");
 
+
         auto monitor = app.add_subcommand("monitor","Monitoring directory recursively");
-        monitor->add_option("directory","Directory to be monitored")
+        std::string directoryToMonitor;
+        monitor->add_option("directory",directoryToMonitor,"Directory to be monitored")
                 ->check(CLI::ExistingDirectory)
                 ->required();
         monitor->add_option("hashes", hashes, "File containing hashes")
                 ->check(CLI::ExistingFile)
                 ->required();
+        monitor->add_option("max_thread",MAX_THREAD_N,"Max thread number")
+        ->required();
 
         CLI11_PARSE(app, argc, argv)
 
@@ -108,25 +113,6 @@ int main(int argc, char **argv) {
             AlterQuarantinePermissions(0); // "closing" quarantine
             return EXIT_SUCCESS;
         }
-        // subcommand which scan given directory
-        if (*scan) {
-            std::cout << "Loading hashes..." << "\n";
-            if (!GetHashesFromFile(hashesSet, hashes)) { // loading hashes
-                std::cerr << "Unable to read file containing hashes" << "\n";
-                AlterQuarantinePermissions(0);
-                return EXIT_FAILURE;
-            }
-
-            std::cout << "Starting scanning:" << "\n";
-            ScanFiles(target);
-            std::cout << "Scan has been finished! \n";
-            AlterQuarantinePermissions(0);
-            return EXIT_SUCCESS;
-        }
-
-        if(*monitor){
-
-        }
 
         // subcommand which restore specific file from quarantine
         if (*restore) {
@@ -140,8 +126,32 @@ int main(int argc, char **argv) {
             return EXIT_SUCCESS;
         }
 
+        std::cout << "Loading hashes..." << "\n";
+        if (!GetHashesFromFile(hashesSet, hashes)) { // loading hashes
+            std::cerr << "Unable to read file containing hashes" << "\n";
+            AlterQuarantinePermissions(0);
+            return EXIT_FAILURE;
+        }
+
+        // subcommand which scan given directory
+        if (*scan) {
+
+            std::cout << "Starting scanning:" << "\n";
+            ScanFiles(target);
+            std::cout << "Scan has been finished! \n";
+            AlterQuarantinePermissions(0);
+            return EXIT_SUCCESS;
+        }
+
+        if(*monitor){
+            monitorDirectoryRecursively(directoryToMonitor);
+        }
+
+
+
 
     } catch (std::runtime_error &ex) {
+        std::cout << "Program has been suspended\n";
         return EXIT_FAILURE;
     }
 }

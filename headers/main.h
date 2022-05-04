@@ -15,5 +15,6 @@ extern std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> hashe
 // global variable containing quarantine directory path
 extern std::filesystem::path quarantineDirectory;
 
+extern int MAX_THREAD_N;
 
 #endif //ANTIVIRUS_MAIN_H

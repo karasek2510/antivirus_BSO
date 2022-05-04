@@ -3,6 +3,8 @@ project(antivirus)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(antivirus src/main.cpp src/data_management.cpp src/crypto_functions.cpp headers/crypto_functions.h headers/data_management.h src/scanner.cpp headers/scanner.h headers/main.h src/quarantine.cpp headers/quarantine.h src/monitor.cpp headers/monitor.h)
+find_package(Threads REQUIRED)
+add_executable(antivirus src/main.cpp src/data_management.cpp src/crypto_functions.cpp headers/crypto_functions.h headers/data_management.h src/scanner.cpp headers/scanner.h headers/main.h src/quarantine.cpp headers/quarantine.h src/monitor.cpp headers/monitor.h headers/thread_safe_queue.h)
 
+target_link_libraries(antivirus ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(antivirus ${CMAKE_SOURCE_DIR}/libs/libcrypto++.a)

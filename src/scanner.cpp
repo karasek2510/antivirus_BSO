@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <thread>
 
 #include "../headers/crypto_functions.h"
 #include "../headers/quarantine.h"
@@ -21,6 +22,7 @@ bool IsHashInUnorderedSet(std::unordered_set<std::array<std::uint64_t, 2>, HashA
 
 
 bool ScanFile(const std::filesystem::path &path) {
+//    std::cout << "Curr thread: " << std::this_thread::get_id << "\n";
     if (CheckFileFs(path) != 61267) { // filtering files with specific filesystem
         return false;
     }

@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include <cryptopp/md5.h>
+#include <iostream>
 
 // converting hash in hex string to array of 2 uint64_t
 std::array<std::uint64_t, 2> StringHashToUint64s(const std::string &strHash) {
@@ -20,7 +21,7 @@ std::array<std::uint64_t, 2> StringHashToUint64s(const std::string &strHash) {
 // checking filesystem of the file
 int CheckFileFs(const std::filesystem::path &path) {
     struct statfs fileFs{};
-    if (statfs(path.c_str(), &fileFs) != 0) {
+    if (statfs(path.string().c_str(), &fileFs) != 0) {
         return -1;
     }
     return static_cast<int>(fileFs.f_type);
