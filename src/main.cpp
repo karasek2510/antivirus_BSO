@@ -11,6 +11,7 @@
 #include "../headers/scanner.h"
 #include "../headers/quarantine.h"
 #include "../headers/monitor.h"
+#include "../headers/yara.h"
 
 
 // function handling ctrl+c signal
@@ -69,10 +70,19 @@ int main(int argc, char **argv) {
         monitor->add_option("max_thread",MAX_THREAD_N,"Max thread number")
         ->required();
 
+        std::vector<std::filesystem::path> rule_paths;
+        auto yara = app.add_subcommand("yara", "Scanning with yara");
+        yara->add_option("--rules",rule_paths,"Yara rules using in scanning")
+            ->check(CLI::ExistingFile)
+            ->required();
+        yara->add_option("target", target, "Target to be scanned (file/directory)")
+                ->check(CLI::ExistingDirectory | CLI::ExistingFile)
+                ->required();
+
         CLI11_PARSE(app, argc, argv)
 
         // if no subcommand was typed
-        if (!(*restore || *scan || *hash || *showQuarantine || *monitor)) {
+        if (!(*restore || *scan || *hash || *showQuarantine || *monitor || *yara)) {
             std::cout << "Parameters are required" << "\n";
             std::cout << "Run with --help for more information." << "\n";
             return EXIT_FAILURE;
@@ -126,6 +136,18 @@ int main(int argc, char **argv) {
             return EXIT_SUCCESS;
         }
 
+        if (*yara){
+            if(!InitializeYaraDetector(rule_paths)){
+                std::cerr << "Yara detector cannot initialize successfully\n";
+                AlterQuarantinePermissions(0);
+                return EXIT_FAILURE;
+            }
+            ScanFiles(target, &ScanUsingYaraDetector);
+
+            AlterQuarantinePermissions(0);
+            return EXIT_SUCCESS;
+        }
+
         std::cout << "Loading hashes..." << "\n";
         if (!GetHashesFromFile(hashesSet, hashes)) { // loading hashes
             std::cerr << "Unable to read file containing hashes" << "\n";
@@ -135,9 +157,8 @@ int main(int argc, char **argv) {
 
         // subcommand which scan given directory
         if (*scan) {
-
             std::cout << "Starting scanning:" << "\n";
-            ScanFiles(target);
+            ScanFiles(target,&ScanFile);
             std::cout << "Scan has been finished! \n";
             AlterQuarantinePermissions(0);
             return EXIT_SUCCESS;
@@ -145,6 +166,8 @@ int main(int argc, char **argv) {
 
         if(*monitor){
             monitorDirectoryRecursively(directoryToMonitor);
+            AlterQuarantinePermissions(0);
+            return EXIT_SUCCESS;
         }
 
 

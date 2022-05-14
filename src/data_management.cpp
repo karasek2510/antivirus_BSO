@@ -11,6 +11,38 @@
 #include <cryptopp/md5.h>
 #include <iostream>
 
+
+std::optional<std::filesystem::path> CheckFileBeforeScanning(std::filesystem::path path){
+
+    if (CheckFileFs(path) != 61267) { // filtering files with specific filesystem
+        return std::nullopt;
+    }
+    std::filesystem::path regularFilePath = path;
+    if (std::filesystem::is_regular_file(path)) {
+        if (std::filesystem::is_symlink(path)) {
+            try {
+                regularFilePath = std::filesystem::canonical(path.parent_path().append(  // following symlink
+                        std::filesystem::read_symlink(path).string()));
+            } catch (const std::exception &ex) {
+                std::cout << path.string() << " -> Cannot read symlink" << "\n";
+                return std::nullopt;
+            }
+            if (!std::filesystem::is_regular_file(regularFilePath)) { // if symlink is pointing on not regular file
+                std::cout << regularFilePath.string() << " -> Cannot read file" << "\n";
+                return std::nullopt;
+            }
+        }
+    } else {
+        return std::nullopt;
+    }
+    if (std::filesystem::is_empty(regularFilePath)) { // file is empty
+        std::cout << regularFilePath.string() << " -> Empty file" << "\n";
+        return std::nullopt;
+    }
+    return regularFilePath;
+
+}
+
 // converting hash in hex string to array of 2 uint64_t
 std::array<std::uint64_t, 2> StringHashToUint64s(const std::string &strHash) {
     std::uint64_t value1 = std::stoull(strHash.substr(0,16),nullptr, 16);

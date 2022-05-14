@@ -14,7 +14,7 @@ bool IsHashInUnorderedSet(std::unordered_set<std::array<std::uint64_t, 2>, HashA
 
 bool ScanFile(const std::filesystem::path& path);
 
-void ScanFiles(std::filesystem::path &path);
+void ScanFiles(std::filesystem::path &path, bool (*ScanningFunction)(const std::filesystem::path&));
 
 bool GetHashesFromFile(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file);
 

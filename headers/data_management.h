@@ -17,6 +17,8 @@ public:
     }
 };
 
+std::optional<std::filesystem::path> CheckFileBeforeScanning(std::filesystem::path path);
+
 std::array<std::uint64_t, 2> StringHashToUint64s(const std::string& strHash);
 
 int CheckFileFs(const std::filesystem::path& path);

@@ -17,4 +17,6 @@ extern std::filesystem::path quarantineDirectory;
 
 extern int MAX_THREAD_N;
 
+
+
 #endif //ANTIVIRUS_MAIN_H
