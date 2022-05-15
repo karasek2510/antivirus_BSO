@@ -18,4 +18,4 @@ add_executable(antivirus ${antivirus_SRC})
 
 target_link_libraries(antivirus ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(antivirus ${CMAKE_SOURCE_DIR}/libs/libcrypto++.a)
-target_link_libraries(antivirus ${CMAKE_SOURCE_DIR}/libs/libyara.so)
+target_link_libraries(antivirus ${CMAKE_SOURCE_DIR}/libs/libyara.a)
