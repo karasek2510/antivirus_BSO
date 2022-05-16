@@ -3,13 +3,14 @@
 #define ANTIVIRUS_MONITOR_H
 
 #include <future>
+#include <filesystem>
 
 template<typename T>
-bool FutureIsReady(std::future<T>* t);
+bool FutureIsReady(std::future<T> *t);
 
-bool IsFileInThreadsMap(const std::filesystem::path& path);
+bool IsFileInThreadsMap(const std::filesystem::path &path);
 
-std::string EventToPath(struct inotify_event* event);
+std::string EventToPath(struct inotify_event *event);
 
 bool NotifyChanges(int fileDescriptor);
 
@@ -19,6 +20,6 @@ void UserInputThread();
 
 void ThreadWatcher();
 
-bool MonitorDirectoryRecursively(const std::filesystem::path& path);
+bool MonitorDirectoryRecursively(const std::filesystem::path &path);
 
 #endif //ANTIVIRUS_MONITOR_H

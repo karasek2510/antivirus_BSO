@@ -7,12 +7,11 @@
 #include <filesystem>
 #include <string>
 #include <unordered_set>
-
-#include <cryptopp/md5.h>
 #include <iostream>
 
+#include <cryptopp/md5.h>
 
-std::optional<std::filesystem::path> CheckFileBeforeScanning(std::filesystem::path path){
+std::optional<std::filesystem::path> CheckFileBeforeScanning(std::filesystem::path path) {
 
     if (CheckFileFs(path) != 61267) { // filtering files with specific filesystem
         return std::nullopt;
@@ -45,8 +44,8 @@ std::optional<std::filesystem::path> CheckFileBeforeScanning(std::filesystem::pa
 
 // converting hash in hex string to array of 2 uint64_t
 std::array<std::uint64_t, 2> StringHashToUint64s(const std::string &strHash) {
-    std::uint64_t value1 = std::stoull(strHash.substr(0,16),nullptr, 16);
-    std::uint64_t value2 = std::stoull(strHash.substr(16,16),nullptr, 16);
+    std::uint64_t value1 = std::stoull(strHash.substr(0, 16), nullptr, 16);
+    std::uint64_t value2 = std::stoull(strHash.substr(16, 16), nullptr, 16);
     return std::array<std::uint64_t, 2>{value1, value2};
 }
 

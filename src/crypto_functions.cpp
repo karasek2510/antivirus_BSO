@@ -22,8 +22,8 @@ std::optional<std::array<std::uint64_t, 2>> Md5FromFile(const std::string &file)
     try {
         CryptoPP::FileSource fs(file.c_str(), true,
                                 new CryptoPP::HashFilter(md5,
-                                         new CryptoPP::ArraySink(hashArray.data(),
-                                                         CryptoPP::Weak1::MD5::DIGESTSIZE)));
+                                                         new CryptoPP::ArraySink(hashArray.data(),
+                                                                                 CryptoPP::Weak1::MD5::DIGESTSIZE)));
     }
     catch (CryptoPP::FileStore::Err &err) {
         return std::nullopt; // returned if hash can't be computed
@@ -47,13 +47,14 @@ bool EncryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &k
         CryptoPP::FileSource{in, true,
                              new CryptoPP::StreamTransformationFilter{
                                      cipher, new CryptoPP::FileSink{out}}};
-    }catch (CryptoPP::FileSink::Err &err) {
+    } catch (CryptoPP::FileSink::Err &err) {
         std::cerr << "Cannot encrypt file\n";
         return false; // returned if encryption can't be done
     }
     return true;
 
 }
+
 // decryption with AES CFB
 bool DecryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &key,
                 const std::array<std::byte, CryptoPP::AES::BLOCKSIZE> &iv,
@@ -65,11 +66,11 @@ bool DecryptAES(const std::array<std::byte, CryptoPP::AES::DEFAULT_KEYLENGTH> &k
 
     std::ifstream in{filename_in, std::ios::binary};
     std::ofstream out{filename_out, std::ios::binary};
-    try{
+    try {
         CryptoPP::FileSource{in, true,
                              new CryptoPP::StreamTransformationFilter{
                                      cipher, new CryptoPP::FileSink{out}}};
-    }catch (CryptoPP::FileSink::Err &err) {
+    } catch (CryptoPP::FileSink::Err &err) {
         std::cerr << "Cannot decrypt file\n";
         return false; // returned if decryption can't be done
     }

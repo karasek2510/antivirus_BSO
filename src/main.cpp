@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     std::string restoreFilename;
     restore->add_option("file", restoreFilename,
                         "Filename in quarantine (can be checked in \"showQuarantine\" subcommand) to be restored")
-                        ->required();
+            ->required();
 
     auto scan = app.add_subcommand("scan", "Scan targets");
     std::filesystem::path target;
@@ -59,22 +59,22 @@ int main(int argc, char **argv) {
     auto showQuarantine = app.add_subcommand("showQuarantine", "Show files that are in quarantine");
 
 
-    auto monitor = app.add_subcommand("monitor","Monitoring directory recursively");
+    auto monitor = app.add_subcommand("monitor", "Monitoring directory recursively");
     std::string directoryToMonitor;
-    monitor->add_option("directory",directoryToMonitor,"Directory to be monitored")
+    monitor->add_option("directory", directoryToMonitor, "Directory to be monitored")
             ->check(CLI::ExistingDirectory)
             ->required();
     monitor->add_option("hashes", hashes, "File containing hashes")
             ->check(CLI::ExistingFile)
             ->required();
-    monitor->add_option("max_thread",MAX_THREAD_N,"Max thread number")
-    ->required();
+    monitor->add_option("max_thread", MAX_THREAD_N, "Max thread number")
+            ->required();
 
     std::vector<std::filesystem::path> rule_paths;
     auto yara = app.add_subcommand("yara", "Scanning with yara");
-    yara->add_option("--rules",rule_paths,"Yara rules using in scanning")
-        ->check(CLI::ExistingFile)
-        ->required();
+    yara->add_option("--rules", rule_paths, "Yara rules using in scanning")
+            ->check(CLI::ExistingFile)
+            ->required();
     yara->add_option("target", target, "Target to be scanned (file/directory)")
             ->check(CLI::ExistingDirectory | CLI::ExistingFile)
             ->required();
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         }
     }
     // "opening" quarantine for next operations
-    if (!AlterQuarantinePermissions(448)) {
+    if (!AlterQuarantinePermissions(0700)) {
         return EXIT_FAILURE;
     }
     // subcommand which show files with stats in quarantine
@@ -136,14 +136,13 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
     // subcommand which scan given directory or file using yara
-    if (*yara){
-        if(!InitializeYaraDetector(rule_paths)){
+    if (*yara) {
+        if (!InitializeYaraDetector(rule_paths)) {
             std::cerr << "Yara detector cannot initialize successfully\n";
             AlterQuarantinePermissions(0);
             return EXIT_FAILURE;
         }
         ScanFiles(target, &ScanUsingYaraDetector);
-
         AlterQuarantinePermissions(0);
         return EXIT_SUCCESS;
     }
@@ -158,14 +157,14 @@ int main(int argc, char **argv) {
     // subcommand which scan given directory
     if (*scan) {
         std::cout << "Starting scanning:" << "\n";
-        ScanFiles(target,&ScanFile);
+        ScanFiles(target, &ScanFile);
         std::cout << "Scan has been finished! \n";
         AlterQuarantinePermissions(0);
         return EXIT_SUCCESS;
     }
     // subcommand which monitor changes and scan files
-    if(*monitor){
-        if(!MonitorDirectoryRecursively(directoryToMonitor)){
+    if (*monitor) {
+        if (!MonitorDirectoryRecursively(directoryToMonitor)) {
             std::cerr << "Monitoring has been stopped with error!\n";
             AlterQuarantinePermissions(0);
             return EXIT_FAILURE;

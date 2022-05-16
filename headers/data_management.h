@@ -19,14 +19,14 @@ public:
 
 std::optional<std::filesystem::path> CheckFileBeforeScanning(std::filesystem::path path);
 
-std::array<std::uint64_t, 2> StringHashToUint64s(const std::string& strHash);
+std::array<std::uint64_t, 2> StringHashToUint64s(const std::string &strHash);
 
-int CheckFileFs(const std::filesystem::path& path);
+int CheckFileFs(const std::filesystem::path &path);
 
 std::array<std::uint64_t, 2> ByteArray16ToUint64s(std::array<byte, CryptoPP::Weak1::MD5::DIGESTSIZE> array);
 
 template<std::size_t SIZE>
-std::string ArrayToHexString(const std::array<std::byte, SIZE>& array){
+std::string ArrayToHexString(const std::array<std::byte, SIZE> &array) {
     std::ostringstream ss;
     ss << std::hex << std::uppercase << std::setfill('0');
     ss << std::hex << std::uppercase << std::setfill('0');
@@ -42,7 +42,7 @@ std::array<std::byte, SIZE> HexStringToArray(const std::string &hex) {
     for (unsigned int i = 0; i < hex.length(); i += 2) {
         std::string byteString = hex.substr(i, 2);
         auto byte = static_cast<std::byte>(strtol(byteString.c_str(), nullptr, 16));
-        bytes[i/2] = byte;
+        bytes[i / 2] = byte;
     }
     return bytes;
 }

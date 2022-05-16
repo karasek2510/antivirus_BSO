@@ -23,7 +23,7 @@ bool IsHashInUnorderedSet(std::unordered_set<std::array<std::uint64_t, 2>, HashA
 
 bool ScanFile(const std::filesystem::path &path) {
     std::optional<std::filesystem::path> regularFilePath = CheckFileBeforeScanning(path);
-    if(!regularFilePath){
+    if (!regularFilePath) {
         return false;
     }
     std::optional<std::array<std::uint64_t, 2>> md5 = Md5FromFile(regularFilePath.value()); // computing hash
@@ -46,7 +46,7 @@ bool ScanFile(const std::filesystem::path &path) {
 
 }
 
-void ScanFiles(std::filesystem::path &path, bool (*ScanningFunction)(const std::filesystem::path&)) {
+void ScanFiles(std::filesystem::path &path, bool (*ScanningFunction)(const std::filesystem::path &)) {
     std::uint64_t numberOfFiles = 0;
     if (!std::filesystem::is_directory(path)) {
         ScanningFunction(path);
@@ -74,19 +74,20 @@ void ScanFiles(std::filesystem::path &path, bool (*ScanningFunction)(const std::
 }
 
 // Loading hashes from file
-bool GetHashesFromFile(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file) {
+bool
+GetHashesFromFile(std::unordered_set<std::array<std::uint64_t, 2>, HashArrayUint64_t> &uSet, const std::string &file) {
     std::ifstream fileIn(file);
     if (!fileIn) {
         return false;
     }
     std::string line;
-    try{
+    try {
         while (std::getline(fileIn, line)) {
             if (!line.empty()) {
                 uSet.insert(StringHashToUint64s(line));
             }
         }
-    }catch (std::invalid_argument &ex){
+    } catch (std::invalid_argument &ex) {
         return false;
     }
     fileIn.close();
