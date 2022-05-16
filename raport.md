@@ -1,6 +1,7 @@
 # Projekt BSO - Temat 1 - Antywirus
-## Część podstawowa
 Szymon Kasperek
+
+# Część podstawowa
 
 ### Wstęp
 Celem pierwszej części projektu było przygotowanie prostego antywirusa dla systemu z jądrem Linux. Program został napisany i testowany na ubuntu-20.04.3-desktop-amd64.
@@ -50,7 +51,21 @@ Aplikacja wyświetla statystyki na temat wykonywanych akcji. Informuje o statusi
 ## Statyczna oraz dynamiczna analiza kodu
 
 Do napisania programu wykorzystywałem IDE z uruchomioną statyczną analizą kodu narzędziem clang-tidy. Zgodnie ze swoją wiedzą poprawiałem sugerowane przez narzędzie błędy oraz odnosiłem się do wskazanych uwag.  
-Do analizy dynamicznej wykorzystałem narzędzie Valgrind w celu identyfikacji ewentualnych problemów z zarządzaniem pamięcią. 
+Do analizy dynamicznej wykorzystałem narzędzie Valgrind w celu identyfikacji ewentualnych problemów z zarządzaniem pamięcią.
+
+# Część zaawansowana
+
+## Dodatkowa funkcja - wsparcie YARA
+
+Jako dodatkową funkcję postanowiłem zaimplementować możliwość skanowania plików za pomocą mechanizmu YARA. Dodatkowy moduł o nazwie "yara" pozwala w sposób analogiczny do modułu scan dokonywać analizy wskazanych plików i katalogów. Zamiast bazy skrótów plików uznawanych za niebezpieczne należy przekazać jeden lub wiele plików zawierających odpowiednio sformatowane reguły zgodne ze standardem wykorzystywanym przez narzędzie YARA. W przypadku dopasowania z co najmniej jedną z reguł następuje nałożenia kwarantanny w ten sam sposób co podczas normalnego skanowania z wykorzystaniem hashy.  
+W swojej implementacji wykorzystałem elementy kodu źródłowego z repozytorium yaracpp (wrappera biblioteki yara dla języka C++).  
+[Link do repozytorium](https://github.com/avast/yaracpp)
+
+## Działanie w tle - ciągłe skanowanie z wykorzystaniem inotify
+
+W ramach funkcji oferującej działanie w tle zaimplementowałem moduł nadzorujący katalog (oraz kolejne w sposób rekurencyjny). W przypadku modyfikacji lub utworzenia pliku dokonywane jest skanowanie z wykorzystaniem skrótów plików. Moduł wykorzystuje wielowątkowość w celu zapewnienia ciągłości otrzymywania informacji o zdarzeniach związanych z system plików. W przypadku zaistnienia takiego zdarzenia tworzony jest nowy wątek, którego zadaniem jest przeskanowanie pliku i ewentualne nałożenie kwarantanny.  
+W celu ograniczenia ilości wątków podczas wywoływania programu z takim modułem należy przekazać liczbę maksymalnej ilości wątków działających jednocześnie.  
+Chcąc zakończyć monitorowanie, należy wpisać znak "q" co pozwoli zakończyć się wątkom monitorującym i pozwoli niesiłowo zakończyć program. 
 
 
 
